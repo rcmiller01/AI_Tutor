@@ -111,7 +111,7 @@
         "provider": {
             "type": "string",
             "enum": [
-                "mercury2",
+                "openrouter",
                 "openai",
                 "fallback_curated"
             ],

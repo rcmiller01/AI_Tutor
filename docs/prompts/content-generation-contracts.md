@@ -1,7 +1,7 @@
 # Prompt Contracts: LLM Content Generation
 
 > These contracts define the system prompts, user prompt templates, output schemas, and validation rules
-> for each content template. Used by `ContentGenJob` to call Mercury2 (or OpenAI fallback).
+> for each content template. Used by `ContentGenJob` to call OpenRouter (or OpenAI fallback).
 
 ---
 
@@ -231,20 +231,20 @@ Output JSON:
 
 ---
 
-## Mercury2-Specific Configuration
+## OpenRouter Configuration
 
 ```json
 {
-  "provider": "mercury2",
-  "endpoint": "https://api.inceptionlabs.ai/v1/chat/completions",
-  "model": "mercury-2",
-  "temperature": 0.3,
+  "provider": "openrouter",
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "model": "google/gemini-2.5-pro",
+  "temperature": 0.4,
   "max_tokens": 1024,
   "response_format": { "type": "json_object" }
 }
 ```
 
 ### Fallback Chain
-1. Mercury2 (primary) — fastest, cheapest
-2. OpenAI GPT (fallback) — if Mercury2 is down or validation fails
+1. OpenRouter (primary) — best models for complex reasoning
+2. OpenAI GPT (fallback) — if OpenRouter is down or validation fails
 3. Curated pool (last resort) — return pre-authored content, log failure

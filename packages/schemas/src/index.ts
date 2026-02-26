@@ -21,7 +21,7 @@ export type AnswerMethod = 'exact_match' | 'set_match' | 'ordered_match' | 'fuzz
 export type ScopeTag = 'reading' | 'phonics' | 'sight_words' | 'comprehension' | 'vocabulary' | 'spelling' | 'math' | 'science';
 export type UnlockableCategory = 'theme' | 'character' | 'background' | 'sound_pack' | 'badge';
 export type StarReason = 'correct_answer' | 'streak_bonus' | 'mastery_bonus' | 'level_up' | 'reward_redeemed' | 'unlockable_purchased' | 'admin_adjustment';
-export type ContentGenProvider = 'mercury2' | 'openai' | 'fallback_curated';
+export type ContentGenProvider = 'openrouter' | 'openai' | 'fallback_curated';
 export type ContentGenStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'rejected';
 
 // --- Skill Spec ---

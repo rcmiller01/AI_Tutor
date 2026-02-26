@@ -129,7 +129,7 @@ CREATE TABLE content_gen_jobs (
     constraints          JSONB        NOT NULL,
     output_schema_id     VARCHAR(100) NOT NULL,
     status               VARCHAR(20)  NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'running', 'succeeded', 'failed', 'rejected')),
-    provider             VARCHAR(30)  NOT NULL CHECK (provider IN ('mercury2', 'openai', 'fallback_curated')),
+    provider             VARCHAR(30)  NOT NULL CHECK (provider IN ('openrouter', 'openai', 'fallback_curated')),
     model                VARCHAR(100),
     result_content_id    UUID         REFERENCES content_objects(content_id),
     attempt_count        INTEGER      NOT NULL DEFAULT 0,

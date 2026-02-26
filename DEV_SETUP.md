@@ -99,5 +99,5 @@ cp infra/.env.example .env
 | Variable | Required | Description |
 |---|---|---|
 | `OPENAI_API_KEY` | For voice | OpenAI Realtime API key |
-| `MERCURY2_API_KEY` | For content gen | Inception Labs API key |
+| `OPENROUTER_API_KEY` | For content gen | OpenRouter API key |
 | `DATABASE_URL` | Auto-set | Postgres connection string |
