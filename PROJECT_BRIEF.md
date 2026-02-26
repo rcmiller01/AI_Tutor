@@ -144,17 +144,24 @@ Parents/guardians who want enforceable limits, approvals, and clear progress vis
 
 | Decision | Rationale |
 |---|---|
+| **TypeScript** backend (Node.js) | Shared language with frontend, type safety for deterministic engines |
+| **React** frontend | Largest ecosystem, proven with Tauri, rich component libraries |
+| **Tauri** desktop shell | Small footprint (~3MB), native webview, best for always-on mirror + future Pi |
+| **pnpm** workspaces monorepo | Fast, strict, industry standard |
+| **OpenAI Realtime API** for voice (MVP) | Low-latency speech-in/speech-out, interrupt handling |
 | Cloud-only LLM for MVP | Speed + quality; offline fallback deferred |
 | Deterministic engines, not LLM-driven runtime | Predictability, safety, no tangents |
 | Local DB (PostgreSQL + pgvector) | Privacy, parent reads local data |
-| Web-based UI shared across platforms | Single codebase for Desktop + Android |
-| OpenAI Realtime API for voice | Low-latency streaming audio, interrupt handling |
+| **Stars** as reward currency | Earned by child, parent defines real-world rewards redeemable for Stars |
+| Child selects game/level via AI | Agency within guardrails; parent sets curriculum, child chooses within it |
 
 ---
 
 ## References
 
+- [Decisions Log](file:///c:/Users/rober/Documents/AI_Tutor/DECISIONS.md)
 - [Architecture Spec v1](file:///c:/Users/rober/Documents/AI_Tutor/ARCHITECTURE.md)
+- [Planning Review](file:///c:/Users/rober/Documents/AI_Tutor/PLANNING_REVIEW.md)
 - [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime)
 - Phi-3-mini technical report (future offline fallback candidate)
 - SplashLearn / ABCya (engine inspiration, not code dependencies)

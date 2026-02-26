@@ -18,34 +18,42 @@ This spec defines the **runtime architecture** for a web-based, cross-platform s
 
 ### 1.1 Components
 
-#### A) Child Client App (Web UI + device shell)
+#### A) Child Client App (React + Tauri shell)
 
-- Runs on: Desktop (Electron/Tauri wrapper or browser kiosk) + Android (WebView wrapper).
+- Runs on: Desktop (Tauri wrapper) + Android (WebView wrapper).
+- Tech: React, TypeScript
 - Responsibilities:
   - UI rendering for engines (touch/controller)
-  - Voice capture + wake UX (if used)
+  - Voice capture via OpenAI Realtime API (streamed through Mirror Core)
+  - AI-guided game/level selection within parent guardrails
   - Session orchestration with Engine Runtime API
   - Local notifications for "approval pending/denied/approved"
+  - Reward animations (Stars, sounds, unlockables)
 
-#### B) Parent Portal (Web UI)
+#### B) Parent Portal (React Web UI)
 
 - Runs on: Desktop or phone browser.
+- Tech: React, TypeScript (shared component library with Child App)
 - Responsibilities:
   - Admin login
+  - Set curriculum and learning goals
   - Approve/deny requests (Parent Approval Cards)
-  - Manage policies (time limits, allowed scopes)
+  - Manage policies (time limits, allowed scopes, grade bands)
+  - Define Star rewards (real-world rewards redeemable for Stars)
   - View analytics dashboards (reads from local DB via API)
 
 #### C) Local Backend Service ("Mirror Core")
 
 - Runs on: the primary device (desktop/laptop) hosting Postgres.
+- Tech: TypeScript (Node.js), pnpm monorepo
 - Exposes HTTP/WebSocket API to both Child App and Parent Portal.
 - Responsibilities:
   - Deterministic Engine Runtime orchestration
   - Policy engine enforcement + approvals workflow
   - Content storage + retrieval (pgvector)
+  - Reward system (Stars ledger, unlockable progression)
   - Audit logs + analytics events
-  - Cloud AI gateway (calls to STT/LLM/TTS or realtime voice API)
+  - Cloud AI relay/proxy (Realtime API traffic flows through Mirror Core)
   - Authentication/session tokens
 
 #### D) Local DB: PostgreSQL + pgvector
@@ -57,14 +65,18 @@ This spec defines the **runtime architecture** for a web-based, cross-platform s
   - Policies + approvals + audit logs
   - Vector embeddings for retrieval
 
-#### E) Cloud AI Providers
+#### E) Cloud AI Providers (Hybrid)
 
-- Cloud-only for MVP.
-- Used for:
-  - Speech to text (if not realtime end-to-end)
-  - LLM content generation (bounded JSON outputs)
-  - TTS (if not realtime)
-  - Optional realtime "speech-in/speech-out" conversation path
+- Cloud-only for MVP. Two providers for different workloads:
+- **OpenAI Realtime API** — speech-in/speech-out voice conversation
+  - Child speaks → Mirror Core relays audio → OpenAI processes → voice response
+  - Handles: game selection, encouragement, hints, read-aloud
+- **Mercury2 (Inception Labs)** — fast content generation
+  - Diffusion-based LLM, ~1000 tok/s, OpenAI API-compatible
+  - Handles: story generation, drill item creation, match set variations
+  - $0.25/M input, $0.75/M output
+- **OpenAI Embeddings** — text-embedding-3-small for content retrieval
+- All cloud traffic is relayed through Mirror Core (never direct client-to-cloud)
 
 ---
 
@@ -305,6 +317,9 @@ REQUESTED → NOTIFIED → APPROVED | DENIED
 | `GET` | `/api/sessions/{id}` | Get current session state snapshot (for resume) |
 | `POST` | `/api/voice/intent` | Submit transcript → returns routed intent + action suggestion (backend decides) |
 | `GET` | `/api/policies/summary` | Child-visible limits (e.g., minutes left) |
+| `GET` | `/api/rewards/stars` | Get current Star balance + recent earnings |
+| `GET` | `/api/rewards/unlockables` | Get unlockable items + unlock status |
+| `POST` | `/api/sessions/{id}/pause` | Pause session (save state for resume) |
 
 ### 7.2 Parent Portal endpoints (Admin)
 
@@ -319,6 +334,11 @@ REQUESTED → NOTIFIED → APPROVED | DENIED
 | `PUT` | `/api/admin/policies` | Update policies |
 | `GET` | `/api/admin/skills` | List skill specs |
 | `POST` | `/api/admin/skills` | Create/import skill spec |
+| `GET` | `/api/admin/curriculum` | Get curriculum goals |
+| `PUT` | `/api/admin/curriculum` | Set/update curriculum goals |
+| `GET` | `/api/admin/rewards` | Get Star reward definitions |
+| `POST` | `/api/admin/rewards` | Create Star reward (real-world reward for Stars) |
+| `POST` | `/api/admin/rewards/{id}/redeem` | Mark a Star reward as redeemed |
 | `GET` | `/api/admin/analytics/*` | Read local DB aggregates |
 
 ### 7.3 Real-time notifications
@@ -329,36 +349,35 @@ REQUESTED → NOTIFIED → APPROVED | DENIED
 
 ---
 
-## 8) Voice Architecture (cloud-only, with guardrails)
+## 8) Voice Architecture (OpenAI Realtime API)
 
-### 8.1 Two supported modes (choose per device capability)
+### 8.1 MVP Mode: Realtime speech-in/speech-out
 
-**Mode A: Realtime speech-in/speech-out**
+- Child App captures audio → streams to Mirror Core → Mirror Core relays to OpenAI Realtime API
+- Mirror Core acts as relay/proxy — **never** direct client-to-cloud
+- Mirror Core mediates via:
+  - System prompt constraints (kid-friendly, task-aligned, short responses)
+  - Function/tool definitions (limited to allowed intents)
+  - Policy checks before executing any tool call
+- Voice used for:
+  - Game/level selection ("I want to play the word game")
+  - In-session encouragement and hints
+  - Read-aloud narration (Story engine)
 
-- Child App streams audio to cloud realtime API
-- Backend mediates session config + tool calls
-- Backend still enforces:
-  - Allowed intents
-  - Policy checks
-  - "Content generation only" constraints
+### 8.2 Modular Pipeline (deferred post-MVP)
 
-**Mode B: Modular pipeline**
+- Wake UX → STT → intent router → TTS
+- Kept as architecture option for future fallback/offline mode
 
-- Wake UX (client-side button or lightweight wake detector)
-- Audio → cloud STT
-- Transcript → backend intent router (LLM-assisted but deterministic allow/deny)
-- Backend responds with:
-  - Engine prompt changes, or
-  - TTS request (cloud TTS) + UI payload
+### 8.3 Voice guardrails
 
-### 8.2 Voice guardrails
-
-- Voice can request actions, but backend decides allowed actions.
+- Voice can request actions, but Mirror Core decides allowed actions.
 - Any scope change request becomes Approval Card.
 - Voice responses in child mode are:
   - Short
   - Aligned with active task
   - Never "open tutoring lecture mode"
+- Backend intercepts all Realtime API responses before forwarding to child
 
 ---
 
@@ -370,14 +389,18 @@ REQUESTED → NOTIFIED → APPROVED | DENIED
 |---|---|
 | `users_admin` | Admin auth |
 | `devices` | Child client devices |
-| `child_profile` | Single row Day 1 |
+| `child_profile` | Single row Day 1 (with `child_id` PK for future multi-child) |
 | `policies` | Parent-set rules |
+| `curriculum_goals` | Parent-defined learning goals and priorities per child |
 | `skill_specs` | Skill definitions |
 | `content_objects` | Immutable content instances |
 | `content_embeddings` | pgvector embeddings (or vector column in content_objects) |
-| `sessions` | Session records |
+| `sessions` | Session records (FK to `child_id`) |
 | `session_events` | Append-only telemetry |
 | `approvals` | Approval card records |
+| `stars_ledger` | Append-only Star transactions (earned/spent) |
+| `star_rewards` | Parent-defined rewards redeemable for Stars |
+| `unlockables` | Themes, characters, customizations + unlock status |
 | `audit_log` | Admin action audit trail |
 
 ### 9.2 Vector retrieval (pgvector)
