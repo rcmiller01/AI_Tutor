@@ -1,6 +1,9 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { healthRoutes } from './routes/health.js';
+import { sessionRoutes } from './routes/sessions.js';
+import { skillRoutes } from './routes/skills.js';
+import { runAllSeeds } from './db/seed.js';
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
 const HOST = process.env.HOST ?? '0.0.0.0';
@@ -26,11 +29,21 @@ async function main() {
 
     // Routes
     await app.register(healthRoutes, { prefix: '/api' });
+    await app.register(skillRoutes, { prefix: '/api' });
+    await app.register(sessionRoutes, { prefix: '/api' });
 
     // Start
     try {
         await app.listen({ port: PORT, host: HOST });
         app.log.info(`Mirror Core running at http://${HOST}:${PORT}`);
+
+        // Run seeds after server is listening
+        try {
+            await runAllSeeds();
+            app.log.info('Database seeded successfully.');
+        } catch (seedErr) {
+            app.log.warn('Seed failed (DB may not be running): %s', seedErr instanceof Error ? seedErr.message : seedErr);
+        }
     } catch (err) {
         app.log.error(err);
         process.exit(1);
