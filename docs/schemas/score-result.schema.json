@@ -1,0 +1,140 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/score-result",
+    "title": "ScoreResult",
+    "description": "Result of scoring an InteractionEvent. Includes correctness, hints, streak, and mastery status.",
+    "type": "object",
+    "required": [
+        "is_correct",
+        "stars_earned",
+        "streak",
+        "mastery_status"
+    ],
+    "properties": {
+        "is_correct": {
+            "type": "boolean"
+        },
+        "stars_earned": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Stars awarded for this interaction (includes streak bonus)."
+        },
+        "streak": {
+            "type": "object",
+            "required": [
+                "current",
+                "best"
+            ],
+            "properties": {
+                "current": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "best": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "multiplier": {
+                    "type": "number",
+                    "minimum": 1,
+                    "default": 1,
+                    "description": "Current streak bonus multiplier on Stars."
+                }
+            }
+        },
+        "mastery_status": {
+            "type": "object",
+            "required": [
+                "state"
+            ],
+            "properties": {
+                "state": {
+                    "type": "string",
+                    "enum": [
+                        "in_progress",
+                        "mastery_gate",
+                        "mastered",
+                        "remediation"
+                    ]
+                },
+                "accuracy": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Running accuracy for current difficulty level."
+                },
+                "items_completed": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "items_remaining": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "current_difficulty": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "max_difficulty": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "hint": {
+            "$ref": "#/$defs/HintPayload",
+            "description": "Hint provided if the answer was incorrect and hints remain."
+        },
+        "misconception_id": {
+            "type": "string",
+            "description": "Matched misconception pattern (if any)."
+        },
+        "sound_effect": {
+            "type": "string",
+            "enum": [
+                "correct",
+                "incorrect",
+                "streak_3",
+                "streak_5",
+                "streak_10",
+                "mastery",
+                "level_up"
+            ],
+            "description": "Sound effect to play."
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "HintPayload": {
+            "type": "object",
+            "required": [
+                "hint_text",
+                "hint_style",
+                "hints_remaining"
+            ],
+            "properties": {
+                "hint_text": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "hint_style": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "audio",
+                        "highlight",
+                        "eliminate_wrong",
+                        "show_example"
+                    ]
+                },
+                "hint_audio_key": {
+                    "type": "string"
+                },
+                "hints_remaining": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,99 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/approval-request",
+    "title": "ApprovalRequest",
+    "description": "Parent Approval Card — generated when child requests something outside current scope.",
+    "type": "object",
+    "required": [
+        "approval_id",
+        "child_id",
+        "request_type",
+        "status",
+        "requested_at"
+    ],
+    "properties": {
+        "approval_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "child_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "request_type": {
+            "type": "string",
+            "enum": [
+                "scope_change",
+                "skill_change",
+                "time_extension",
+                "game_mode"
+            ],
+            "description": "What kind of approval is being requested."
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "requested",
+                "notified",
+                "approved",
+                "denied",
+                "expired",
+                "fulfilled"
+            ]
+        },
+        "requested_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "resolved_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "expires_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "request_details": {
+            "type": "object",
+            "properties": {
+                "requested_skill_id": {
+                    "type": "string"
+                },
+                "requested_scope_tag": {
+                    "type": "string"
+                },
+                "requested_grade_band": {
+                    "type": "string"
+                },
+                "requested_minutes": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "child_message": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "What the child said or asked (for parent context)."
+                }
+            }
+        },
+        "resolution": {
+            "type": "object",
+            "properties": {
+                "resolved_by": {
+                    "type": "string",
+                    "description": "Admin user who resolved."
+                },
+                "parent_note": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "resulting_session_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Session created if approved."
+                }
+            }
+        }
+    },
+    "additionalProperties": false
+}

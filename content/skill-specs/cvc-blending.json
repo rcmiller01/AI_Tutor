@@ -1,0 +1,140 @@
+{
+    "skill_id": "cvc-blending",
+    "version": 1,
+    "grade_band": "K",
+    "objective": "Blend consonant-vowel-consonant sounds to read simple words.",
+    "allowed_engine_types": [
+        "MICRO_SKILL_DRILL"
+    ],
+    "allowed_interactions": [
+        "tap",
+        "voice"
+    ],
+    "templates": [
+        "tap_choice"
+    ],
+    "item_generator_rules": {
+        "phonics_patterns": [
+            "CVC"
+        ],
+        "allowed_vocab": [
+            "cat",
+            "bat",
+            "hat",
+            "mat",
+            "rat",
+            "sat",
+            "fat",
+            "pat",
+            "dog",
+            "log",
+            "fog",
+            "hog",
+            "bog",
+            "jog",
+            "cup",
+            "pup",
+            "bug",
+            "hug",
+            "jug",
+            "mug",
+            "rug",
+            "tug",
+            "pen",
+            "hen",
+            "ten",
+            "men",
+            "den",
+            "pig",
+            "big",
+            "dig",
+            "fig",
+            "wig",
+            "jig",
+            "hot",
+            "pot",
+            "dot",
+            "got",
+            "lot",
+            "not",
+            "rot",
+            "bed",
+            "red",
+            "fed",
+            "led",
+            "wed",
+            "sun",
+            "bun",
+            "fun",
+            "gun",
+            "run",
+            "van",
+            "can",
+            "fan",
+            "man",
+            "pan",
+            "ran",
+            "tan",
+            "top",
+            "hop",
+            "mop",
+            "pop",
+            "cop"
+        ],
+        "disallowed_graphemes": [
+            "ph",
+            "ch",
+            "sh",
+            "th",
+            "ck",
+            "ough",
+            "tion"
+        ],
+        "max_word_length": 3,
+        "max_sentence_length": 6
+    },
+    "answer_key_logic": {
+        "method": "exact_match",
+        "case_sensitive": false
+    },
+    "misconceptions": [
+        {
+            "pattern": "confuses_b_d",
+            "hint_text": "Look carefully! The letter 'b' has a bump on the right. The letter 'd' has a bump on the left."
+        },
+        {
+            "pattern": "reverses_vowels",
+            "hint_text": "Listen to the middle sound again. Is it 'a' like in apple, or 'u' like in umbrella?"
+        },
+        {
+            "pattern": "skips_middle_vowel",
+            "hint_text": "Try sounding out each letter slowly: the first sound, then the middle sound, then the last sound."
+        }
+    ],
+    "difficulty_ladder": {
+        "levels": 5,
+        "promotion_threshold": 0.85,
+        "demotion_threshold": 0.4,
+        "items_per_level": 10
+    },
+    "mastery_threshold": {
+        "min_accuracy": 0.9,
+        "min_streak": 5,
+        "min_items": 15
+    },
+    "hint_policy": {
+        "max_hints_per_item": 2,
+        "allowed_hint_styles": [
+            "text",
+            "audio",
+            "eliminate_wrong"
+        ],
+        "hint_penalty": 0.5
+    },
+    "scope_tags": [
+        "reading",
+        "phonics"
+    ],
+    "stars_per_correct": 1,
+    "stars_mastery_bonus": 15
+}

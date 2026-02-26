@@ -1,0 +1,92 @@
+{
+    "skill_id": "word-picture-match",
+    "version": 1,
+    "grade_band": "K",
+    "objective": "Match written words to their corresponding pictures to build vocabulary recognition.",
+    "allowed_engine_types": [
+        "MATCH_SORT_CLASSIFY"
+    ],
+    "allowed_interactions": [
+        "drag"
+    ],
+    "templates": [
+        "match_pairs"
+    ],
+    "item_generator_rules": {
+        "phonics_patterns": [
+            "CVC",
+            "CVCC",
+            "CCVC"
+        ],
+        "allowed_vocab": [
+            "cat",
+            "dog",
+            "sun",
+            "hat",
+            "cup",
+            "bed",
+            "pig",
+            "bus",
+            "fish",
+            "bird",
+            "tree",
+            "star",
+            "book",
+            "ball",
+            "frog",
+            "ship",
+            "duck",
+            "cake",
+            "hand",
+            "door",
+            "milk",
+            "shoe",
+            "lamp",
+            "bell",
+            "rain",
+            "moon",
+            "flag",
+            "nest",
+            "drum",
+            "leaf",
+            "ring",
+            "boat"
+        ],
+        "max_word_length": 5
+    },
+    "answer_key_logic": {
+        "method": "exact_match",
+        "case_sensitive": false
+    },
+    "misconceptions": [
+        {
+            "pattern": "confuses_similar_images",
+            "hint_text": "Look closely at the picture. What do you see? Try sounding out the word to help!"
+        }
+    ],
+    "difficulty_ladder": {
+        "levels": 4,
+        "promotion_threshold": 0.85,
+        "demotion_threshold": 0.4,
+        "items_per_level": 8
+    },
+    "mastery_threshold": {
+        "min_accuracy": 0.9,
+        "min_streak": 4,
+        "min_items": 12
+    },
+    "hint_policy": {
+        "max_hints_per_item": 2,
+        "allowed_hint_styles": [
+            "audio",
+            "highlight"
+        ],
+        "hint_penalty": 0.5
+    },
+    "scope_tags": [
+        "reading",
+        "vocabulary"
+    ],
+    "stars_per_correct": 1,
+    "stars_mastery_bonus": 10
+}

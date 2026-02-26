@@ -1,0 +1,457 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/content-object",
+    "title": "ContentObject",
+    "description": "Immutable content instance used by engines. Discriminated union by template_id.",
+    "type": "object",
+    "required": [
+        "content_id",
+        "skill_id",
+        "engine_type",
+        "template_id",
+        "version",
+        "source",
+        "created_at",
+        "payload"
+    ],
+    "properties": {
+        "content_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "skill_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$"
+        },
+        "engine_type": {
+            "type": "string",
+            "enum": [
+                "MICRO_SKILL_DRILL",
+                "MATCH_SORT_CLASSIFY",
+                "STORY_MICROTASKS"
+            ]
+        },
+        "template_id": {
+            "type": "string",
+            "enum": [
+                "tap_choice",
+                "drag_bins",
+                "type_in_blank",
+                "match_pairs",
+                "story_page",
+                "comprehension_q"
+            ]
+        },
+        "version": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "source": {
+            "type": "string",
+            "enum": [
+                "CURATED",
+                "LLM_GENERATED",
+                "MIXED"
+            ]
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "constraints_hash": {
+            "type": "string",
+            "description": "SHA-256 hash of the generator constraints used to produce this content."
+        },
+        "difficulty_level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Difficulty level within the skill's ladder."
+        },
+        "payload": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/TapChoiceItem"
+                },
+                {
+                    "$ref": "#/$defs/DragBinsSet"
+                },
+                {
+                    "$ref": "#/$defs/TypeInBlankItem"
+                },
+                {
+                    "$ref": "#/$defs/MatchPairsSet"
+                },
+                {
+                    "$ref": "#/$defs/StoryPage"
+                },
+                {
+                    "$ref": "#/$defs/ComprehensionQ"
+                }
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "TapChoiceItem": {
+            "type": "object",
+            "required": [
+                "type",
+                "prompt_text",
+                "choices",
+                "correct_choice_id"
+            ],
+            "properties": {
+                "type": {
+                    "const": "tap_choice"
+                },
+                "prompt_text": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Instruction or question shown to the child."
+                },
+                "prompt_audio_key": {
+                    "type": "string",
+                    "description": "Optional audio asset key for spoken prompt."
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "choice_id",
+                            "label"
+                        ],
+                        "properties": {
+                            "choice_id": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "image_key": {
+                                "type": "string"
+                            },
+                            "audio_key": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "minItems": 2,
+                    "maxItems": 6
+                },
+                "correct_choice_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "DragBinsSet": {
+            "type": "object",
+            "required": [
+                "type",
+                "bins",
+                "items",
+                "correct_bin_map"
+            ],
+            "properties": {
+                "type": {
+                    "const": "drag_bins"
+                },
+                "instruction_text": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "bins": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "bin_id",
+                            "label"
+                        ],
+                        "properties": {
+                            "bin_id": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "image_key": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "minItems": 2,
+                    "maxItems": 5
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "item_id",
+                            "label"
+                        ],
+                        "properties": {
+                            "item_id": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "image_key": {
+                                "type": "string"
+                            },
+                            "audio_key": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "minItems": 2,
+                    "maxItems": 12
+                },
+                "correct_bin_map": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "description": "Map of item_id → correct bin_id."
+                }
+            }
+        },
+        "TypeInBlankItem": {
+            "type": "object",
+            "required": [
+                "type",
+                "prompt_text",
+                "correct_answer"
+            ],
+            "properties": {
+                "type": {
+                    "const": "type_in_blank"
+                },
+                "prompt_text": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "prompt_audio_key": {
+                    "type": "string"
+                },
+                "correct_answer": {
+                    "type": "string"
+                },
+                "accept_alternatives": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Additional accepted answers."
+                }
+            }
+        },
+        "MatchPairsSet": {
+            "type": "object",
+            "required": [
+                "type",
+                "pairs"
+            ],
+            "properties": {
+                "type": {
+                    "const": "match_pairs"
+                },
+                "instruction_text": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "pairs": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "pair_id",
+                            "left",
+                            "right"
+                        ],
+                        "properties": {
+                            "pair_id": {
+                                "type": "string"
+                            },
+                            "left": {
+                                "type": "object",
+                                "required": [
+                                    "label"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "image_key": {
+                                        "type": "string"
+                                    },
+                                    "audio_key": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "right": {
+                                "type": "object",
+                                "required": [
+                                    "label"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "image_key": {
+                                        "type": "string"
+                                    },
+                                    "audio_key": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "minItems": 2,
+                    "maxItems": 8
+                }
+            }
+        },
+        "StoryPage": {
+            "type": "object",
+            "required": [
+                "type",
+                "page_number",
+                "page_text",
+                "word_spans"
+            ],
+            "properties": {
+                "type": {
+                    "const": "story_page"
+                },
+                "story_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "page_number": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "page_text": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "read_aloud_ssml": {
+                    "type": "string",
+                    "description": "SSML markup for TTS read-aloud."
+                },
+                "word_spans": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "word",
+                            "start_index",
+                            "end_index"
+                        ],
+                        "properties": {
+                            "word": {
+                                "type": "string"
+                            },
+                            "start_index": {
+                                "type": "integer"
+                            },
+                            "end_index": {
+                                "type": "integer"
+                            },
+                            "is_tappable": {
+                                "type": "boolean",
+                                "default": true
+                            },
+                            "definition": {
+                                "type": "string",
+                                "maxLength": 100
+                            },
+                            "sound_it_out": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Phoneme breakdown for sound-it-out helper."
+                            }
+                        }
+                    }
+                },
+                "illustration_key": {
+                    "type": "string"
+                },
+                "allowed_vocab_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ComprehensionQ": {
+            "type": "object",
+            "required": [
+                "type",
+                "question",
+                "choices",
+                "correct_choice_id",
+                "question_type"
+            ],
+            "properties": {
+                "type": {
+                    "const": "comprehension_q"
+                },
+                "story_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "question": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "question_type": {
+                    "type": "string",
+                    "enum": [
+                        "literal",
+                        "inference",
+                        "vocabulary",
+                        "sequence"
+                    ]
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "choice_id",
+                            "label"
+                        ],
+                        "properties": {
+                            "choice_id": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "minItems": 2,
+                    "maxItems": 4
+                },
+                "correct_choice_id": {
+                    "type": "string"
+                },
+                "rationale": {
+                    "type": "string",
+                    "maxLength": 300,
+                    "description": "Explanation of correct answer (visible in parent mode)."
+                }
+            }
+        }
+    }
+}

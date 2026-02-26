@@ -1,0 +1,109 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/prompt-payload",
+    "title": "PromptPayload",
+    "description": "Payload sent from Mirror Core to the client to render a UI prompt. Client renders based on this; client never decides correctness.",
+    "type": "object",
+    "required": [
+        "prompt_id",
+        "session_id",
+        "template_id",
+        "widget_type",
+        "content",
+        "allowed_interactions"
+    ],
+    "properties": {
+        "prompt_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "session_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "content_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "template_id": {
+            "type": "string",
+            "enum": [
+                "tap_choice",
+                "drag_bins",
+                "type_in_blank",
+                "match_pairs",
+                "story_page",
+                "comprehension_q"
+            ]
+        },
+        "widget_type": {
+            "type": "string",
+            "enum": [
+                "TapChoice",
+                "DragBins",
+                "TypeInBlank",
+                "MatchPairs",
+                "ReadAloudPage",
+                "ComprehensionQ"
+            ],
+            "description": "React component name to render."
+        },
+        "content": {
+            "type": "object",
+            "description": "Template-specific content payload (matches ContentObject payload but without answer keys)."
+        },
+        "allowed_interactions": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "tap",
+                    "drag",
+                    "type",
+                    "voice",
+                    "word_tap"
+                ]
+            },
+            "minItems": 1
+        },
+        "instruction_text": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Short instruction to display or read aloud."
+        },
+        "instruction_audio_key": {
+            "type": "string"
+        },
+        "time_limit_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Optional per-item time limit. 0 = no limit."
+        },
+        "progress": {
+            "type": "object",
+            "properties": {
+                "current_item": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "total_items": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "current_difficulty": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "stars_session_total": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "streak_current": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        }
+    },
+    "additionalProperties": false
+}

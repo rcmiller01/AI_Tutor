@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://magic-mirror-tutor/schemas/skill-spec",
+  "title": "SkillSpec",
+  "description": "Authoritative definition of what can happen for a skill. Controls engine behavior, allowed interactions, scoring, and mastery.",
+  "type": "object",
+  "required": [
+    "skill_id",
+    "grade_band",
+    "objective",
+    "allowed_engine_types",
+    "allowed_interactions",
+    "templates",
+    "item_generator_rules",
+    "answer_key_logic",
+    "mastery_threshold",
+    "hint_policy",
+    "scope_tags"
+  ],
+  "properties": {
+    "skill_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
+      "description": "Unique, stable identifier for this skill (e.g., 'cvc-blending', 'sight-words-k')."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Schema version for this skill spec."
+    },
+    "grade_band": {
+      "type": "string",
+      "enum": ["PK", "K", "1", "2", "3"],
+      "description": "Target grade band."
+    },
+    "objective": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "One-sentence learning objective."
+    },
+    "allowed_engine_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["MICRO_SKILL_DRILL", "MATCH_SORT_CLASSIFY", "STORY_MICROTASKS"]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Which engines can run this skill."
+    },
+    "allowed_interactions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["tap", "drag", "type", "voice"]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Input methods available for this skill."
+    },
+    "templates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "tap_choice",
+          "drag_bins",
+          "type_in_blank",
+          "match_pairs",
+          "story_page",
+          "comprehension_q"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Content templates this skill uses."
+    },
+    "item_generator_rules": {
+      "type": "object",
+      "description": "Constraints for content generation.",
+      "properties": {
+        "phonics_patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed phonics patterns (e.g., 'CVC', 'CVCe', 'CCVC')."
+        },
+        "allowed_vocab": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Explicit vocabulary allowlist. If empty, any age-appropriate word is allowed."
+        },
+        "disallowed_graphemes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Graphemes to exclude (e.g., 'ph', 'ough' for early readers)."
+        },
+        "max_word_length": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "Maximum number of letters per word."
+        },
+        "max_sentence_length": {
+          "type": "integer",
+          "minimum": 3,
+          "description": "Maximum number of words per sentence."
+        },
+        "reading_level_range": {
+          "type": "object",
+          "properties": {
+            "min": { "type": "number", "minimum": 0 },
+            "max": { "type": "number", "minimum": 0 }
+          },
+          "description": "Flesch-Kincaid or similar reading level bounds."
+        }
+      },
+      "additionalProperties": true
+    },
+    "answer_key_logic": {
+      "type": "object",
+      "required": ["method"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["exact_match", "set_match", "ordered_match", "fuzzy_match"],
+          "description": "How correctness is determined."
+        },
+        "case_sensitive": {
+          "type": "boolean",
+          "default": false
+        },
+        "tolerance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Fuzzy match threshold (0 = exact, 1 = anything goes)."
+        }
+      }
+    },
+    "misconceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pattern", "hint_text"],
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Pattern describing the wrong answer (e.g., 'confuses_b_d', 'reverses_vowels')."
+          },
+          "hint_text": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Kid-friendly hint to correct the misconception."
+          },
+          "hint_audio_key": {
+            "type": "string",
+            "description": "Optional audio asset key for spoken hint."
+          }
+        }
+      },
+      "default": [],
+      "description": "Known wrong-answer patterns mapped to targeted hints."
+    },
+    "difficulty_ladder": {
+      "type": "object",
+      "properties": {
+        "levels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 5
+        },
+        "promotion_threshold": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.0,
+          "default": 0.85,
+          "description": "Accuracy needed to advance to next level."
+        },
+        "demotion_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.5,
+          "default": 0.4,
+          "description": "Accuracy below which to drop a level."
+        },
+        "items_per_level": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 50,
+          "default": 10,
+          "description": "Number of items to evaluate before level decision."
+        }
+      }
+    },
+    "mastery_threshold": {
+      "type": "object",
+      "required": ["min_accuracy"],
+      "properties": {
+        "min_accuracy": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.0,
+          "description": "Minimum accuracy to be considered mastered."
+        },
+        "min_streak": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum consecutive correct answers required."
+        },
+        "min_items": {
+          "type": "integer",
+          "minimum": 5,
+          "description": "Minimum total items attempted."
+        },
+        "max_time_seconds": {
+          "type": "integer",
+          "description": "Optional time constraint for mastery (speed component)."
+        }
+      }
+    },
+    "hint_policy": {
+      "type": "object",
+      "required": ["max_hints_per_item"],
+      "properties": {
+        "max_hints_per_item": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Maximum hints allowed per item."
+        },
+        "allowed_hint_styles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["text", "audio", "highlight", "eliminate_wrong", "show_example"]
+          },
+          "description": "Types of hints the engine may show."
+        },
+        "hint_penalty": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "description": "Score multiplier when hint is used (1 = no penalty)."
+        }
+      }
+    },
+    "scope_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "reading",
+          "phonics",
+          "sight_words",
+          "comprehension",
+          "vocabulary",
+          "spelling",
+          "math",
+          "science"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Topic tags used by policy engine for scope enforcement."
+    },
+    "stars_per_correct": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Base Stars awarded per correct answer."
+    },
+    "stars_mastery_bonus": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 10,
+      "description": "Bonus Stars awarded on mastery gate completion."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,197 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/rewards",
+    "title": "Rewards",
+    "description": "Schemas for the Stars reward system: ledger entries, parent-defined rewards, and unlockables.",
+    "$defs": {
+        "StarsLedgerEntry": {
+            "type": "object",
+            "required": [
+                "entry_id",
+                "child_id",
+                "amount",
+                "reason",
+                "created_at"
+            ],
+            "properties": {
+                "entry_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "child_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "amount": {
+                    "type": "integer",
+                    "description": "Positive = earned, negative = spent."
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "correct_answer",
+                        "streak_bonus",
+                        "mastery_bonus",
+                        "level_up",
+                        "reward_redeemed",
+                        "unlockable_purchased",
+                        "admin_adjustment"
+                    ]
+                },
+                "session_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "balance_after": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Running balance after this entry."
+                }
+            }
+        },
+        "StarReward": {
+            "type": "object",
+            "required": [
+                "reward_id",
+                "child_id",
+                "name",
+                "cost_stars",
+                "status",
+                "created_at"
+            ],
+            "properties": {
+                "reward_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "child_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Parent-defined reward name (e.g., '30 min screen time')."
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "cost_stars": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "icon_key": {
+                    "type": "string",
+                    "description": "Visual icon for the reward."
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "available",
+                        "redeemed",
+                        "archived"
+                    ]
+                },
+                "repeatable": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Can this reward be earned multiple times?"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "redeemed_at": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        },
+        "Unlockable": {
+            "type": "object",
+            "required": [
+                "unlockable_id",
+                "name",
+                "category",
+                "cost_stars",
+                "is_unlocked"
+            ],
+            "properties": {
+                "unlockable_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "theme",
+                        "character",
+                        "background",
+                        "sound_pack",
+                        "badge"
+                    ]
+                },
+                "cost_stars": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "is_unlocked": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "unlock_condition": {
+                    "type": "string",
+                    "enum": [
+                        "purchase",
+                        "milestone"
+                    ],
+                    "description": "How this is unlocked: purchase with stars or automatic milestone."
+                },
+                "milestone_requirement": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "total_stars_earned",
+                                "skills_mastered",
+                                "streak_max",
+                                "sessions_completed"
+                            ]
+                        },
+                        "threshold": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    "description": "If unlock_condition is 'milestone', what triggers it."
+                },
+                "asset_key": {
+                    "type": "string",
+                    "description": "Asset file reference."
+                },
+                "preview_key": {
+                    "type": "string",
+                    "description": "Preview image for locked state."
+                },
+                "unlocked_at": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        }
+    }
+}

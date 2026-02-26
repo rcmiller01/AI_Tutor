@@ -1,0 +1,200 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/content-gen-job",
+    "title": "ContentGenJob",
+    "description": "Content Generation Job — the constrained LLM request contract. LLM interactions are mediated via this job queue to enforce rails.",
+    "type": "object",
+    "required": [
+        "job_id",
+        "skill_id",
+        "template_id",
+        "constraints",
+        "output_schema_id",
+        "status",
+        "provider",
+        "created_at"
+    ],
+    "properties": {
+        "job_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "requested_by_session_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "skill_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$"
+        },
+        "template_id": {
+            "type": "string",
+            "enum": [
+                "tap_choice",
+                "drag_bins",
+                "type_in_blank",
+                "match_pairs",
+                "story_page",
+                "comprehension_q"
+            ]
+        },
+        "difficulty_level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+        },
+        "constraints": {
+            "type": "object",
+            "description": "Explicit generation constraints passed to the LLM prompt.",
+            "properties": {
+                "phonics_patterns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "allowed_vocab": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "disallowed_graphemes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "max_word_length": {
+                    "type": "integer"
+                },
+                "max_sentence_length": {
+                    "type": "integer"
+                },
+                "reading_level_range": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "number"
+                        },
+                        "max": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "theme": {
+                    "type": "string",
+                    "description": "Optional theme for story generation."
+                },
+                "item_count": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of items to generate."
+                }
+            },
+            "additionalProperties": true
+        },
+        "output_schema_id": {
+            "type": "string",
+            "description": "References a server-known JSON schema that the output must validate against."
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "running",
+                "succeeded",
+                "failed",
+                "rejected"
+            ]
+        },
+        "provider": {
+            "type": "string",
+            "enum": [
+                "mercury2",
+                "openai",
+                "fallback_curated"
+            ],
+            "description": "AI provider to use."
+        },
+        "model": {
+            "type": "string",
+            "description": "Specific model name/version."
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "started_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "completed_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "result_content_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "FK to stored ContentObject if succeeded."
+        },
+        "attempt_count": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "description": "Number of generation attempts (for retry tracking)."
+        },
+        "max_attempts": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 3
+        },
+        "validation_report": {
+            "type": "object",
+            "properties": {
+                "is_valid": {
+                    "type": "boolean"
+                },
+                "violations": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "rule": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "severity": {
+                                "type": "string",
+                                "enum": [
+                                    "error",
+                                    "warning"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "description": "Validation results after checking LLM output."
+        },
+        "raw_llm_output": {
+            "type": "string",
+            "description": "Raw LLM response for debugging (not exposed to client)."
+        },
+        "prompt_tokens": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "completion_tokens": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "latency_ms": {
+            "type": "integer",
+            "minimum": 0
+        }
+    },
+    "additionalProperties": false
+}

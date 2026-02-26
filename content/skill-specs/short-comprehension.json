@@ -1,0 +1,63 @@
+{
+    "skill_id": "short-comprehension",
+    "version": 1,
+    "grade_band": "1",
+    "objective": "Read short stories and answer comprehension questions about characters, events, and vocabulary.",
+    "allowed_engine_types": [
+        "STORY_MICROTASKS"
+    ],
+    "allowed_interactions": [
+        "tap",
+        "word_tap"
+    ],
+    "templates": [
+        "story_page",
+        "comprehension_q"
+    ],
+    "item_generator_rules": {
+        "max_sentence_length": 10,
+        "reading_level_range": {
+            "min": 0.5,
+            "max": 2.0
+        }
+    },
+    "answer_key_logic": {
+        "method": "exact_match",
+        "case_sensitive": false
+    },
+    "misconceptions": [
+        {
+            "pattern": "answers_from_background",
+            "hint_text": "Good thinking! But let's look at what the story actually says. Can you find the answer in the words?"
+        },
+        {
+            "pattern": "confuses_character_action",
+            "hint_text": "Who did that? Read the sentence again and look for the name."
+        }
+    ],
+    "difficulty_ladder": {
+        "levels": 5,
+        "promotion_threshold": 0.8,
+        "demotion_threshold": 0.4,
+        "items_per_level": 8
+    },
+    "mastery_threshold": {
+        "min_accuracy": 0.85,
+        "min_streak": 3,
+        "min_items": 12
+    },
+    "hint_policy": {
+        "max_hints_per_item": 2,
+        "allowed_hint_styles": [
+            "text",
+            "highlight"
+        ],
+        "hint_penalty": 0.5
+    },
+    "scope_tags": [
+        "reading",
+        "comprehension"
+    ],
+    "stars_per_correct": 2,
+    "stars_mastery_bonus": 20
+}

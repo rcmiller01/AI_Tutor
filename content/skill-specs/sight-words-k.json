@@ -1,0 +1,143 @@
+{
+    "skill_id": "sight-words-k",
+    "version": 1,
+    "grade_band": "K",
+    "objective": "Recognize and read kindergarten high-frequency sight words instantly.",
+    "allowed_engine_types": [
+        "MATCH_SORT_CLASSIFY",
+        "MICRO_SKILL_DRILL"
+    ],
+    "allowed_interactions": [
+        "tap",
+        "drag"
+    ],
+    "templates": [
+        "tap_choice",
+        "match_pairs"
+    ],
+    "item_generator_rules": {
+        "allowed_vocab": [
+            "the",
+            "and",
+            "a",
+            "to",
+            "in",
+            "is",
+            "you",
+            "it",
+            "he",
+            "was",
+            "for",
+            "on",
+            "are",
+            "as",
+            "with",
+            "his",
+            "they",
+            "I",
+            "at",
+            "be",
+            "this",
+            "have",
+            "from",
+            "or",
+            "one",
+            "had",
+            "by",
+            "but",
+            "not",
+            "what",
+            "all",
+            "were",
+            "we",
+            "when",
+            "your",
+            "can",
+            "said",
+            "there",
+            "each",
+            "which",
+            "she",
+            "do",
+            "how",
+            "if",
+            "will",
+            "up",
+            "other",
+            "about",
+            "out",
+            "many",
+            "then",
+            "them",
+            "these",
+            "so",
+            "some",
+            "her",
+            "would",
+            "make",
+            "like",
+            "has",
+            "look",
+            "two",
+            "more",
+            "go",
+            "see",
+            "no",
+            "way",
+            "could",
+            "my",
+            "than",
+            "been",
+            "call",
+            "who",
+            "am",
+            "find",
+            "come",
+            "made",
+            "after",
+            "back",
+            "only"
+        ],
+        "max_word_length": 6,
+        "max_sentence_length": 8
+    },
+    "answer_key_logic": {
+        "method": "exact_match",
+        "case_sensitive": false
+    },
+    "misconceptions": [
+        {
+            "pattern": "confuses_was_saw",
+            "hint_text": "These words look similar! 'Was' starts with 'w'. 'Saw' starts with 's'."
+        },
+        {
+            "pattern": "confuses_the_they",
+            "hint_text": "'The' is short — just 3 letters. 'They' has an extra letter at the end!"
+        }
+    ],
+    "difficulty_ladder": {
+        "levels": 5,
+        "promotion_threshold": 0.85,
+        "demotion_threshold": 0.4,
+        "items_per_level": 10
+    },
+    "mastery_threshold": {
+        "min_accuracy": 0.9,
+        "min_streak": 5,
+        "min_items": 20
+    },
+    "hint_policy": {
+        "max_hints_per_item": 1,
+        "allowed_hint_styles": [
+            "audio",
+            "show_example"
+        ],
+        "hint_penalty": 0.5
+    },
+    "scope_tags": [
+        "reading",
+        "sight_words"
+    ],
+    "stars_per_correct": 1,
+    "stars_mastery_bonus": 15
+}

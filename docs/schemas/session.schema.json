@@ -1,0 +1,124 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/session",
+    "title": "Session",
+    "description": "A learning or game session bound to a skill, engine, and child profile.",
+    "type": "object",
+    "required": [
+        "session_id",
+        "child_id",
+        "skill_id",
+        "engine_type",
+        "mode",
+        "status",
+        "started_at"
+    ],
+    "properties": {
+        "session_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "child_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "skill_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$"
+        },
+        "engine_type": {
+            "type": "string",
+            "enum": [
+                "MICRO_SKILL_DRILL",
+                "MATCH_SORT_CLASSIFY",
+                "STORY_MICROTASKS"
+            ]
+        },
+        "mode": {
+            "type": "string",
+            "enum": [
+                "learning",
+                "game"
+            ],
+            "description": "Whether this counts as learning time or game time."
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "active",
+                "paused",
+                "completed",
+                "abandoned",
+                "timed_out"
+            ]
+        },
+        "started_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "paused_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "ended_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "duration_seconds": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "difficulty_level": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Current difficulty level within the skill."
+        },
+        "random_seed": {
+            "type": "integer",
+            "description": "Seed for reproducible content selection randomness."
+        },
+        "stats": {
+            "type": "object",
+            "properties": {
+                "items_attempted": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "items_correct": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "accuracy": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "best_streak": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "hints_used": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "stars_earned": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "mastery_achieved": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "engine_state": {
+            "type": "object",
+            "description": "Opaque engine state snapshot for pause/resume. Structure varies by engine_type."
+        },
+        "approval_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "FK to approval that authorized this session, if any."
+        }
+    },
+    "additionalProperties": false
+}

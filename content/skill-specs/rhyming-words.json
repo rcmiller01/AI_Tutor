@@ -1,0 +1,111 @@
+{
+    "skill_id": "rhyming-words",
+    "version": 1,
+    "grade_band": "K",
+    "objective": "Identify and match words that rhyme (share the same ending sound).",
+    "allowed_engine_types": [
+        "MATCH_SORT_CLASSIFY"
+    ],
+    "allowed_interactions": [
+        "drag",
+        "tap"
+    ],
+    "templates": [
+        "match_pairs",
+        "drag_bins"
+    ],
+    "item_generator_rules": {
+        "phonics_patterns": [
+            "CVC",
+            "CVVC"
+        ],
+        "allowed_vocab": [
+            "cat",
+            "hat",
+            "bat",
+            "mat",
+            "rat",
+            "sat",
+            "fat",
+            "dog",
+            "log",
+            "fog",
+            "hog",
+            "jog",
+            "bug",
+            "hug",
+            "jug",
+            "mug",
+            "rug",
+            "pen",
+            "hen",
+            "ten",
+            "men",
+            "sun",
+            "bun",
+            "fun",
+            "run",
+            "top",
+            "hop",
+            "mop",
+            "pop",
+            "cake",
+            "lake",
+            "make",
+            "bake",
+            "tree",
+            "bee",
+            "see",
+            "free",
+            "ball",
+            "tall",
+            "wall",
+            "call",
+            "ring",
+            "sing",
+            "king",
+            "wing"
+        ],
+        "max_word_length": 4,
+        "max_sentence_length": 6
+    },
+    "answer_key_logic": {
+        "method": "set_match",
+        "case_sensitive": false
+    },
+    "misconceptions": [
+        {
+            "pattern": "matches_first_letter",
+            "hint_text": "Rhyming words sound the same at the END. Listen to the ending sound!"
+        },
+        {
+            "pattern": "matches_meaning",
+            "hint_text": "These words mean something similar, but do they sound the same at the end?"
+        }
+    ],
+    "difficulty_ladder": {
+        "levels": 4,
+        "promotion_threshold": 0.85,
+        "demotion_threshold": 0.4,
+        "items_per_level": 8
+    },
+    "mastery_threshold": {
+        "min_accuracy": 0.9,
+        "min_streak": 4,
+        "min_items": 12
+    },
+    "hint_policy": {
+        "max_hints_per_item": 2,
+        "allowed_hint_styles": [
+            "audio",
+            "eliminate_wrong"
+        ],
+        "hint_penalty": 0.5
+    },
+    "scope_tags": [
+        "reading",
+        "phonics"
+    ],
+    "stars_per_correct": 1,
+    "stars_mastery_bonus": 10
+}

@@ -1,0 +1,160 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/interaction-event",
+    "title": "InteractionEvent",
+    "description": "Event emitted when a child interacts with a content item. Covers all input types across all engines.",
+    "type": "object",
+    "required": [
+        "event_id",
+        "session_id",
+        "content_id",
+        "interaction_type",
+        "timestamp",
+        "value"
+    ],
+    "properties": {
+        "event_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "session_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "content_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "interaction_type": {
+            "type": "string",
+            "enum": [
+                "tap",
+                "drag",
+                "type",
+                "voice_response",
+                "word_tap"
+            ]
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "response_time_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Milliseconds from prompt shown to interaction submitted."
+        },
+        "value": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/TapValue"
+                },
+                {
+                    "$ref": "#/$defs/DragValue"
+                },
+                {
+                    "$ref": "#/$defs/TypeValue"
+                },
+                {
+                    "$ref": "#/$defs/VoiceValue"
+                },
+                {
+                    "$ref": "#/$defs/WordTapValue"
+                }
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "TapValue": {
+            "type": "object",
+            "required": [
+                "type",
+                "choice_id"
+            ],
+            "properties": {
+                "type": {
+                    "const": "tap"
+                },
+                "choice_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "DragValue": {
+            "type": "object",
+            "required": [
+                "type",
+                "item_id",
+                "target_bin_id"
+            ],
+            "properties": {
+                "type": {
+                    "const": "drag"
+                },
+                "item_id": {
+                    "type": "string"
+                },
+                "target_bin_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "TypeValue": {
+            "type": "object",
+            "required": [
+                "type",
+                "text"
+            ],
+            "properties": {
+                "type": {
+                    "const": "type"
+                },
+                "text": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "VoiceValue": {
+            "type": "object",
+            "required": [
+                "type",
+                "transcript"
+            ],
+            "properties": {
+                "type": {
+                    "const": "voice_response"
+                },
+                "transcript": {
+                    "type": "string"
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            }
+        },
+        "WordTapValue": {
+            "type": "object",
+            "required": [
+                "type",
+                "word",
+                "word_index"
+            ],
+            "properties": {
+                "type": {
+                    "const": "word_tap"
+                },
+                "word": {
+                    "type": "string"
+                },
+                "word_index": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        }
+    }
+}

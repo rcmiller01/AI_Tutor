@@ -1,0 +1,150 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://magic-mirror-tutor/schemas/policy",
+    "title": "Policy",
+    "description": "Parent-defined rules enforced by the Policy Engine. Also includes curriculum goals.",
+    "type": "object",
+    "required": [
+        "policy_id",
+        "child_id",
+        "policy_type",
+        "value",
+        "updated_at"
+    ],
+    "properties": {
+        "policy_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "child_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "policy_type": {
+            "type": "string",
+            "enum": [
+                "daily_game_time_limit_minutes",
+                "daily_learning_time_limit_minutes",
+                "allowed_engine_types",
+                "allowed_scope_tags",
+                "allowed_grade_bands",
+                "quiet_hours",
+                "requires_approval_for_scope_change"
+            ]
+        },
+        "value": {
+            "oneOf": [
+                {
+                    "type": "integer",
+                    "description": "For time limits (minutes)."
+                },
+                {
+                    "type": "boolean",
+                    "description": "For toggles (e.g., requires_approval)."
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "For allowlists (engine types, scope tags, grade bands)."
+                },
+                {
+                    "$ref": "#/$defs/QuietHours"
+                }
+            ]
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "updated_by": {
+            "type": "string",
+            "description": "Admin user who last updated."
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "QuietHours": {
+            "type": "object",
+            "required": [
+                "enabled"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "start_time": {
+                    "type": "string",
+                    "pattern": "^[0-2][0-9]:[0-5][0-9]$"
+                },
+                "end_time": {
+                    "type": "string",
+                    "pattern": "^[0-2][0-9]:[0-5][0-9]$"
+                },
+                "timezone": {
+                    "type": "string"
+                }
+            }
+        },
+        "CurriculumGoal": {
+            "type": "object",
+            "required": [
+                "goal_id",
+                "child_id",
+                "scope_tag",
+                "description"
+            ],
+            "properties": {
+                "goal_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "child_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "scope_tag": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "target_skill_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Specific skills this goal targets."
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": [
+                        "high",
+                        "medium",
+                        "low"
+                    ],
+                    "default": "medium"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "completed",
+                        "paused"
+                    ],
+                    "default": "active"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "completed_at": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        }
+    }
+}
