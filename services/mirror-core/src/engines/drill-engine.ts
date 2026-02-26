@@ -17,6 +17,7 @@ import {
     updateSession,
     insertSessionEvent,
 } from '../db/queries.js';
+import { generateContentBatch } from '../services/content-generator.js';
 
 // ─── In-Memory Session State ─────────────────────────────────
 
@@ -114,10 +115,20 @@ export async function getNextItem(sessionId: string): Promise<PromptPayload> {
     state.currentItemIndex++;
     state.hintsUsedForCurrentItem = 0;
 
-    // If we've exhausted the pool, reshuffle
+    // If we've exhausted the pool, reshuffle + try to load newly generated items
     if (state.currentItemIndex >= state.contentPool.length) {
-        state.contentPool = shuffleArray(state.contentPool);
+        // Fetch fresh from DB in case background generation finished
+        const freshContent = await getContentBySkillAndDifficulty(
+            state.skillSpec.skill_id, 'tap_choice', state.difficulty, 50
+        );
+        state.contentPool = shuffleArray(freshContent.length > 0 ? freshContent : state.contentPool);
         state.currentItemIndex = 0;
+    }
+
+    // Trigger background generation if pool is running low (< 8 items)
+    if (state.contentPool.length < 8) {
+        generateContentBatch(state.skillSpec.skill_id, 'tap_choice', state.difficulty, 10)
+            .catch(err => console.error('Background content gen failed:', err));
     }
 
     const content = state.contentPool[state.currentItemIndex];
@@ -219,9 +230,21 @@ export async function submitInteraction(
                 const newContent = await getContentBySkillAndDifficulty(
                     state.skillSpec.skill_id, 'tap_choice', state.difficulty,
                 );
+
+                // If we don't have enough, trigger generation for the NEW level right away
+                if (newContent.length < 10) {
+                    generateContentBatch(state.skillSpec.skill_id, 'tap_choice', state.difficulty, 10).catch(() => { });
+                }
+
                 if (newContent.length > 0) {
                     state.contentPool = shuffleArray(newContent);
                     state.currentItemIndex = -1;
+                } else {
+                    // Stay at same level if NO content is ready right now, but we've triggered the build
+                    state.difficulty--;
+                    state.contentPool = shuffleArray(state.contentPool);
+                    state.currentItemIndex = -1;
+                    console.warn(`[DrillEngine] No content for level ${state.difficulty + 1} yet, staying at level ${state.difficulty}`);
                 }
                 soundEffect = 'level_up';
             }

@@ -5,7 +5,7 @@ const { Pool } = pg;
 const pool = new Pool({
     connectionString:
         process.env.DATABASE_URL ??
-        'postgresql://mirror:mirror_dev_password@localhost:5432/mirror_tutor',
+        'postgresql://mirror:mirror_dev_password@localhost:9999/mirror_tutor',
     max: 10,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
@@ -13,6 +13,10 @@ const pool = new Pool({
 
 pool.on('error', (err) => {
     console.error('Unexpected DB pool error:', err);
+});
+
+pool.on('connect', (client) => {
+    console.log(`[DB] Connected to database as ${client.user}`);
 });
 
 export { pool };

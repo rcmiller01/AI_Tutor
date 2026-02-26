@@ -1,12 +1,16 @@
+import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { healthRoutes } from './routes/health.js';
 import { sessionRoutes } from './routes/sessions.js';
 import { skillRoutes } from './routes/skills.js';
+import { contentRoutes } from './routes/content.js';
 import { runAllSeeds } from './db/seed.js';
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
 const HOST = process.env.HOST ?? '0.0.0.0';
+
+console.log('[Startup] DATABASE_URL is:', process.env.DATABASE_URL);
 
 async function main() {
     const app = Fastify({
@@ -31,6 +35,7 @@ async function main() {
     await app.register(healthRoutes, { prefix: '/api' });
     await app.register(skillRoutes, { prefix: '/api' });
     await app.register(sessionRoutes, { prefix: '/api' });
+    await app.register(contentRoutes, { prefix: '/api' });
 
     // Start
     try {
