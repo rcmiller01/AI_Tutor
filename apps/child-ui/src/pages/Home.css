@@ -1,0 +1,196 @@
+/**
+ * apps/child-ui/src/pages/Home.css
+ *
+ * Styles for the home/main menu page.
+ */
+
+.home-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: linear-gradient(180deg, var(--bg-primary) 0%, #1a1a2e 100%);
+}
+
+/* ─── Header ────────────────────────────────────────────────── */
+
+.home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.switch-profile-btn {
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: var(--font);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.switch-profile-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-card);
+    padding: 8px 16px;
+    border-radius: 20px;
+}
+
+.profile-info .profile-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.stars-balance {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--star-gold);
+    font-weight: 700;
+}
+
+/* ─── Companion Section ─────────────────────────────────────── */
+
+.companion-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+}
+
+.greeting h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.greeting p {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+/* ─── Mode Selection ────────────────────────────────────────── */
+
+.mode-selection {
+    padding-bottom: 40px;
+}
+
+.modes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.mode-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 16px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-card:hover:not(:disabled) {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.mode-card:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.mode-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mode-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.mode-icon.voice {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.mode-icon.voice::after {
+    content: '\1F399'; /* microphone emoji */
+}
+
+.mode-icon.learn {
+    background: linear-gradient(135deg, #10b981, #34d399);
+}
+
+.mode-icon.learn::after {
+    content: '\1F4DA'; /* books emoji */
+}
+
+.mode-icon.game {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.mode-icon.game::after {
+    content: '\1F3AE'; /* game controller emoji */
+}
+
+.mode-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.mode-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ─── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 400px) {
+    .modes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mode-card {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 16px 20px;
+    }
+
+    .mode-icon {
+        width: 48px;
+        height: 48px;
+    }
+}

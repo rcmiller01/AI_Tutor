@@ -1,41 +1,56 @@
-import { useState, useCallback } from 'react';
+/**
+ * apps/child-ui/src/components/widgets/TapChoice.tsx
+ *
+ * Multiple choice selection widget with touch-optimized buttons.
+ * Touch targets are 56px+ for ages 6-8.
+ */
 
-interface TapChoiceProps {
+import { useState, useCallback } from 'react';
+import './TapChoice.css';
+
+export interface TapChoiceProps {
     promptText: string;
-    choices: { choice_id: string; label: string }[];
-    onSubmit: (choiceId: string) => void;
+    choices: Array<{ choice_id: string; label: string }>;
+    onSubmit: (response: { choice_id: string }) => void;
     disabled: boolean;
-    feedback: {
-        choiceId: string;
+    feedback?: {
         isCorrect: boolean;
-        hintText?: string;
+        selectedId: string;
     } | null;
 }
 
-export function TapChoice({ promptText, choices, onSubmit, disabled, feedback }: TapChoiceProps) {
+export function TapChoice({
+    promptText,
+    choices,
+    onSubmit,
+    disabled,
+    feedback,
+}: TapChoiceProps) {
     const [selected, setSelected] = useState<string | null>(null);
 
     const handleTap = useCallback(
         (choiceId: string) => {
             if (disabled) return;
             setSelected(choiceId);
-            onSubmit(choiceId);
+            onSubmit({ choice_id: choiceId });
         },
-        [disabled, onSubmit],
+        [disabled, onSubmit]
     );
 
     return (
-        <div className="tap-choice">
+        <div className="tap-choice-widget">
             <h2 className="prompt-text">{promptText}</h2>
+
             <div className="choices-grid">
                 {choices.map((choice) => {
                     let className = 'choice-button';
-                    if (feedback && feedback.choiceId === choice.choice_id) {
-                        className += feedback.isCorrect ? ' correct' : ' incorrect';
-                    }
-                    if (selected === choice.choice_id && !feedback) {
+
+                    if (feedback && feedback.selectedId === choice.choice_id) {
+                        className += feedback.isCorrect ? ' correct' : ' try-again';
+                    } else if (selected === choice.choice_id && !feedback) {
                         className += ' selected';
                     }
+
                     return (
                         <button
                             key={choice.choice_id}
@@ -48,12 +63,6 @@ export function TapChoice({ promptText, choices, onSubmit, disabled, feedback }:
                     );
                 })}
             </div>
-            {feedback && !feedback.isCorrect && feedback.hintText && (
-                <div className="hint-banner">
-                    <span className="hint-icon">💡</span>
-                    <p>{feedback.hintText}</p>
-                </div>
-            )}
         </div>
     );
 }

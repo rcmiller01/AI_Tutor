@@ -1,0 +1,54 @@
+/**
+ * apps/child-ui/src/components/system/HintButton.css
+ *
+ * Styles for HintButton component.
+ */
+
+.hint-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    margin-top: 24px;
+
+    background: rgba(251, 191, 36, 0.1);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 50px;
+
+    color: var(--star-gold);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--font);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hint-button:hover:not(:disabled) {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: var(--star-gold);
+    transform: translateY(-2px);
+}
+
+.hint-button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.hint-icon {
+    font-size: 1.2rem;
+}
+
+.hint-label {
+    font-size: 1rem;
+}
+
+.hint-count {
+    background: var(--star-gold);
+    color: #1a1a2e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 4px;
+}

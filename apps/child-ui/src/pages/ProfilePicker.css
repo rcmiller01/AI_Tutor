@@ -1,0 +1,184 @@
+/**
+ * apps/child-ui/src/pages/ProfilePicker.css
+ *
+ * Styles for the profile picker page.
+ * Touch-optimized for ages 6-8.
+ */
+
+.profile-picker {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: linear-gradient(180deg, var(--bg-primary) 0%, #1a1a2e 100%);
+}
+
+.picker-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.picker-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+}
+
+.picker-header .subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+/* ─── Profiles Grid ─────────────────────────────────────────── */
+
+.profiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 24px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 16px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-card:hover:not(:disabled) {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 32px var(--accent-glow);
+}
+
+.profile-card:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.profile-card:disabled {
+    cursor: default;
+}
+
+.profile-card.selecting {
+    border-color: var(--accent);
+    box-shadow: 0 0 24px var(--accent-glow);
+}
+
+/* ─── Avatar ────────────────────────────────────────────────── */
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.profile-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* ─── Loading Overlay ───────────────────────────────────────── */
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 15, 26, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 22px;
+}
+
+.spinner-small {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--bg-card);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ─── Empty State ───────────────────────────────────────────── */
+
+.empty-state {
+    text-align: center;
+    padding: 48px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--bg-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--text-muted);
+}
+
+.empty-state p {
+    font-size: 1.25rem;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.empty-state .hint {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+/* ─── Error Banner ──────────────────────────────────────────── */
+
+.error-banner {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius);
+    padding: 12px 24px;
+    margin-bottom: 24px;
+}
+
+.error-banner p {
+    color: #fca5a5;
+    font-size: 1rem;
+}
+
+/* ─── Loading Container ─────────────────────────────────────── */
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.loading-container p {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+}

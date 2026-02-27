@@ -1,0 +1,98 @@
+/**
+ * apps/child-ui/src/components/widgets/TapChoice.css
+ *
+ * Styles for TapChoice widget.
+ * Touch-optimized for ages 6-8.
+ */
+
+.tap-choice-widget {
+    width: 100%;
+}
+
+.tap-choice-widget .prompt-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 32px;
+    letter-spacing: 3px;
+    color: var(--text);
+}
+
+.tap-choice-widget .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.tap-choice-widget .choice-button {
+    /* 56px minimum touch target */
+    min-height: 72px;
+    padding: 20px 16px;
+
+    background: var(--bg-card);
+    color: var(--text);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: var(--font);
+    text-transform: lowercase;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tap-choice-widget .choice-button:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.tap-choice-widget .choice-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.tap-choice-widget .choice-button:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+
+.tap-choice-widget .choice-button.selected {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+}
+
+/* Correct answer - green glow, no text change */
+.tap-choice-widget .choice-button.correct {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--correct);
+    box-shadow: 0 0 24px var(--correct-glow);
+    animation: pulse-correct 0.5s ease;
+}
+
+/* Try again - subtle highlight, supportive (no red X or "wrong" text) */
+.tap-choice-widget .choice-button.try-again {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: var(--star-gold);
+    animation: gentle-shake 0.4s ease;
+}
+
+@keyframes pulse-correct {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes gentle-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+    .tap-choice-widget .choices-grid {
+        grid-template-columns: 1fr;
+    }
+}

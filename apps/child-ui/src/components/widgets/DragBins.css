@@ -1,0 +1,162 @@
+/**
+ * apps/child-ui/src/components/widgets/DragBins.css
+ *
+ * Styles for DragBins widget.
+ */
+
+.drag-bins-widget {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ─── Bins Row ──────────────────────────────────────────────── */
+
+.bins-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.bin {
+    background: var(--bg-card);
+    border: 2px dashed var(--text-muted);
+    border-radius: var(--radius);
+    padding: 16px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bin.accepting {
+    border-color: var(--accent);
+    border-style: solid;
+    box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.bin:hover {
+    background: var(--bg-hover);
+}
+
+.bin-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text);
+}
+
+.bin-items {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-content: flex-start;
+}
+
+.placed-item {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--font);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.placed-item:hover:not(:disabled) {
+    background: #9333ea;
+    transform: scale(1.05);
+}
+
+/* ─── Items Tray ────────────────────────────────────────────── */
+
+.items-tray {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.tray-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.items-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.item-chip {
+    /* 56px minimum touch target */
+    min-height: 56px;
+    min-width: 56px;
+    padding: 12px 20px;
+
+    background: var(--bg-hover);
+    color: var(--text);
+    border: 2px solid transparent;
+    border-radius: 28px;
+
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.item-chip:hover:not(:disabled) {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.item-chip.selected {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 4px 16px var(--accent-glow);
+    animation: pulse-selected 0.8s ease infinite;
+}
+
+@keyframes pulse-selected {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* ─── Submit Button ─────────────────────────────────────────── */
+
+.submit-btn {
+    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: var(--font);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 24px var(--accent-glow);
+    align-self: center;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 32px var(--accent-glow);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

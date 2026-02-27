@@ -1,0 +1,118 @@
+/**
+ * apps/child-ui/src/components/widgets/MatchPairs.css
+ *
+ * Styles for MatchPairs widget.
+ */
+
+.match-pairs-widget {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.match-pairs-widget .instructions {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+/* ─── Pairs Container ───────────────────────────────────────── */
+
+.pairs-container {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+}
+
+.pairs-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pair-item {
+    /* 56px minimum touch target */
+    min-height: 56px;
+    min-width: 100px;
+    padding: 12px 20px;
+
+    background: var(--bg-card);
+    color: var(--text);
+    border: 3px solid transparent;
+    border-radius: var(--radius);
+
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-family: var(--font);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pair-item:hover:not(:disabled) {
+    background: var(--bg-hover);
+    transform: translateY(-2px);
+}
+
+.pair-item.selected {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+    box-shadow: 0 0 16px var(--accent-glow);
+    animation: pulse-selected 0.8s ease infinite;
+}
+
+.pair-item.matched {
+    opacity: 0.9;
+    background: var(--bg-hover);
+}
+
+.pair-item:disabled {
+    cursor: default;
+}
+
+@keyframes pulse-selected {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+/* ─── Submit Button ─────────────────────────────────────────── */
+
+.match-pairs-widget .submit-btn {
+    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: var(--font);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 24px var(--accent-glow);
+    align-self: center;
+}
+
+.match-pairs-widget .submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 32px var(--accent-glow);
+}
+
+.match-pairs-widget .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ─── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 400px) {
+    .pairs-container {
+        gap: 16px;
+    }
+
+    .pair-item {
+        min-width: 80px;
+        padding: 10px 14px;
+        font-size: 1rem;
+    }
+}

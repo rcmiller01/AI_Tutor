@@ -1,0 +1,193 @@
+/**
+ * apps/child-ui/src/pages/Session.css
+ *
+ * Styles for the active game session page.
+ */
+
+.session-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: var(--bg-primary);
+}
+
+/* ─── Header ────────────────────────────────────────────────── */
+
+.session-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.session-header h1 {
+    flex: 1;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.exit-btn {
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: var(--font);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.exit-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.stars-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-card);
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: var(--star-gold);
+    font-weight: 700;
+}
+
+/* ─── Skill Selection ───────────────────────────────────────── */
+
+.skill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.skill-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 24px;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.skill-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.skill-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.skill-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* ─── Game Area ─────────────────────────────────────────────── */
+
+.game-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+}
+
+.companion-mini {
+    margin-bottom: 24px;
+}
+
+.companion-mini .companion-dino {
+    width: 80px;
+    height: 80px;
+}
+
+.companion-mini .dino-emoji {
+    font-size: 2.5rem;
+}
+
+/* ─── Error Screen ──────────────────────────────────────────── */
+
+.error-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+}
+
+.error-text {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+/* ─── Mastery Screen ────────────────────────────────────────── */
+
+.mastery-screen,
+.complete-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+}
+
+.mastery-screen h2,
+.complete-screen h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--star-gold), #fcd34d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.mastery-screen p,
+.complete-screen p {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+.mastery-actions {
+    display: flex;
+    gap: 16px;
+}
+
+.btn-secondary {
+    background: var(--bg-card);
+    color: var(--text);
+    border: 2px solid var(--accent);
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-hover);
+}

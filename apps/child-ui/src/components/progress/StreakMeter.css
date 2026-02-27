@@ -1,0 +1,72 @@
+/**
+ * apps/child-ui/src/components/progress/StreakMeter.css
+ *
+ * Styles for StreakMeter component.
+ */
+
+.streak-meter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border-radius: 20px;
+}
+
+.streak-icon {
+    font-size: 1.2rem;
+}
+
+.streak-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--streak-orange);
+}
+
+.streak-multiplier {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-left: 2px;
+}
+
+/* Intensity levels */
+.streak-meter.warm .streak-icon {
+    animation: glow-warm 1s ease-in-out infinite;
+}
+
+.streak-meter.hot .streak-icon {
+    animation: glow-hot 0.6s ease-in-out infinite;
+}
+
+.streak-meter.blazing .streak-icon {
+    animation: glow-blazing 0.3s ease-in-out infinite;
+}
+
+.streak-meter.warm {
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.2);
+}
+
+.streak-meter.hot {
+    box-shadow: 0 0 16px rgba(249, 115, 22, 0.3);
+}
+
+.streak-meter.blazing {
+    box-shadow: 0 0 24px rgba(249, 115, 22, 0.5);
+    border: 1px solid rgba(249, 115, 22, 0.5);
+}
+
+@keyframes glow-warm {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes glow-hot {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+@keyframes glow-blazing {
+    0%, 100% { transform: scale(1) rotate(-5deg); }
+    50% { transform: scale(1.2) rotate(5deg); }
+}
