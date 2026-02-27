@@ -25,15 +25,18 @@
 
 ### 0.1 Schema Package (`packages/schemas`)
 - ✅ TypeScript types for: `SkillSpec`, `ContentObject` (all templates), `InteractionEvent`, `ScoreResult`, `HintPayload`, `Session`, `PromptPayload`, `ApprovalRequest`, `Policy`, rewards
-- ⬜ **Add missing v1.1 types:**
-  - `LearningBundle` (bundle_id, session_id, child_id, skill_id, world_id, talk_plan_id, practice_set_ids, play_config, constraints_hash)
-  - `HintLadderState` (hint_level, near_transfer_scheduled, near_transfer_content_id)
-  - `ChildModeStats` (child_id, mode, recent_count, lifetime_count)
+- ✅ **Added v1.1 types:**
+  - `LearningBundle` + `PlayConfig`
+  - `HintLadderState` + `HINT_RUNGS` constant
+  - `ChildProfile` + `ChildModeStats`
+  - `Parent` + `Household`
   - `World` + `HouseholdEnabledWorld`
-  - `SafeAlternative` (skill_id, world_id, display_label)
-  - `DenialResponse` (denial_reason_code, safe_alternatives[])
-  - `TelemetryEvent` (base shape + all event names as typed discriminated union)
-- ⬜ Export updated `index.ts`; verify no existing imports break
+  - `SafeAlternative` + `DenialResponse`
+  - `TriadMode`, `DenialReasonCode`, `HintRung`, `FlagType`, `MfaType` enums
+  - `SessionV11` (extends `Session` with `current_mode` + `bundle_id`)
+  - `TelemetryEventBase` + full discriminated union `TelemetryEvent` (35 event types)
+  - `TelemetryPayload<T>` utility type
+- ✅ `tsc --noEmit` passes with zero errors
 
 ### 0.2 DB Schema & Migrations (`infra/db/`)
 - ⬜ **Household auth tables:**
