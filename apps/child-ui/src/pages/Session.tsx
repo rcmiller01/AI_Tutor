@@ -8,6 +8,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useChildAuth } from '../contexts/ChildAuthContext';
+import { useVoice } from '../contexts/VoiceContext';
 import { api, type TriadMode, type SessionStartResponse, type InteractionResponse } from '../lib/api';
 import { usePromptRenderer } from '../hooks/usePromptRenderer';
 import { StreakMeter } from '../components/progress/StreakMeter';
@@ -15,6 +16,8 @@ import { StarsBurst } from '../components/rewards/StarsBurst';
 import { CompanionReaction, type CompanionState } from '../components/rewards/CompanionReaction';
 import { HintBanner } from '../components/system/HintBanner';
 import { HintButton } from '../components/system/HintButton';
+import { VoiceFab } from '../components/voice/VoiceFab';
+import { WorldMap } from '../components/navigation/WorldMap';
 import type { PromptPayload, HintPayload } from '@mirror/schemas';
 import './Session.css';
 
@@ -29,7 +32,8 @@ const AVAILABLE_SKILLS = [
 export function Session() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { profile } = useChildAuth();
+    const { profile, token } = useChildAuth();
+    const { bindSession } = useVoice();
 
     // Session state
     const [status, setStatus] = useState<SessionStatus>('skill_select');
@@ -55,6 +59,13 @@ export function Session() {
 
     // Get widget component for current prompt
     const { Widget, widgetProps } = usePromptRenderer(prompt);
+
+    // Bind voice session when session starts
+    useEffect(() => {
+        if (sessionId) {
+            bindSession(sessionId, prompt?.skill_id, currentMode);
+        }
+    }, [sessionId, bindSession, prompt?.skill_id, currentMode]);
 
     // Start a session with selected skill
     const startSession = useCallback(async (skillId: string) => {
@@ -184,18 +195,7 @@ export function Session() {
                     <h1>Choose a Skill</h1>
                 </header>
 
-                <div className="skill-grid">
-                    {AVAILABLE_SKILLS.map(skill => (
-                        <button
-                            key={skill.skill_id}
-                            className="skill-card"
-                            onClick={() => startSession(skill.skill_id)}
-                        >
-                            <span className="skill-name">{skill.name}</span>
-                            <span className="skill-desc">{skill.description}</span>
-                        </button>
-                    ))}
-                </div>
+                <WorldMap skills={AVAILABLE_SKILLS} onSelectSkill={startSession} />
             </div>
         );
     }
@@ -304,6 +304,15 @@ export function Session() {
                     />
                 )}
             </main>
+
+            {/* Voice interaction FAB */}
+            {token && (
+                <VoiceFab
+                    sessionToken={token}
+                    sessionId={sessionId ?? undefined}
+                    onError={(err) => console.error('Voice error:', err)}
+                />
+            )}
         </div>
     );
 }

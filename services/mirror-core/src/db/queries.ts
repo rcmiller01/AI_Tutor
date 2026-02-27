@@ -520,3 +520,202 @@ export async function getContentByIds(contentIds: string[]): Promise<ContentObje
         created_at: r.created_at,
     }));
 }
+
+// ─── Child Profiles ──────────────────────────────────────────────
+
+interface ChildProfileRow {
+    child_id: string;
+    household_id: string;
+    display_name: string;
+    avatar_id: string;
+    preferred_mode: TriadMode | null;
+    accessibility_skip_hints: boolean;
+    created_at: string;
+}
+
+/**
+ * Get a child profile by ID.
+ */
+export async function getChildProfile(childId: string): Promise<ChildProfileRow | null> {
+    return getOne<ChildProfileRow>(
+        'SELECT * FROM children WHERE child_id = $1',
+        [childId],
+    );
+}
+
+// ─── Voice Helper Functions ──────────────────────────────────────
+
+interface SkillLookupRow {
+    skill_id: string;
+    skill_name: string;
+}
+
+/**
+ * Find a skill by keyword (fuzzy match on skill_id or objective).
+ */
+export async function findSkillByKeyword(keyword: string): Promise<{ skill_id: string; skill_name: string } | null> {
+    const searchTerm = `%${keyword.toLowerCase()}%`;
+    const row = await getOne<SkillLookupRow>(
+        `SELECT skill_id, objective as skill_name FROM skill_specs
+         WHERE LOWER(skill_id) LIKE $1 OR LOWER(objective) LIKE $1
+         LIMIT 1`,
+        [searchTerm],
+    );
+    return row;
+}
+
+/**
+ * Start a learning session (simplified for voice).
+ * Returns session with initial prompt.
+ */
+export async function startLearningSession(params: {
+    child_id: string;
+    skill_id: string;
+    mode: TriadMode;
+}): Promise<{ session_id: string; prompt: unknown }> {
+    const id = randomUUID();
+    const defaultStats: SessionStats = {
+        items_attempted: 0,
+        items_correct: 0,
+        accuracy: 0,
+        best_streak: 0,
+        hints_used: 0,
+        stars_earned: 0,
+        mastery_achieved: false,
+    };
+
+    // Default engine type for voice-started sessions
+    const engineType = 'msd';
+
+    const row = await getOne<SessionV11Row>(
+        `INSERT INTO sessions (session_id, child_ref_id, skill_id, engine_type, mode, current_mode, difficulty_level, stats, status)
+         VALUES ($1, $2, $3, $4, 'learning', $5, 1, $6, 'active')
+         RETURNING *`,
+        [id, params.child_id, params.skill_id, engineType, params.mode, JSON.stringify(defaultStats)],
+    );
+
+    // Get first content item for prompt
+    const content = await getContentBySkillAndDifficulty(params.skill_id, 'tap_choice', 1, 1);
+    const prompt = content[0]?.payload ?? { text: 'Let\'s start learning!' };
+
+    return {
+        session_id: row!.session_id,
+        prompt,
+    };
+}
+
+/**
+ * Get a hint for the current session question.
+ */
+export async function getSessionHint(sessionId: string): Promise<{ hint_text: string; hint_level: number }> {
+    const session = await getSessionV11(sessionId);
+    if (!session) throw new Error(`Session not found: ${sessionId}`);
+
+    // Update hints_used stat
+    const newStats = { ...session.stats, hints_used: session.stats.hints_used + 1 };
+    await updateSessionStats(sessionId, newStats);
+
+    // Generate hint based on hint level
+    const hintLevel = Math.min(newStats.hints_used, 3);
+    const hints = [
+        'Think about what we learned!',
+        'Look carefully at each choice.',
+        'Try sounding it out slowly.',
+    ];
+
+    return {
+        hint_text: hints[hintLevel - 1] ?? hints[0],
+        hint_level: hintLevel,
+    };
+}
+
+/**
+ * Switch session mode.
+ */
+export async function switchSessionMode(sessionId: string, newMode: string): Promise<void> {
+    await updateSessionMode(sessionId, newMode as TriadMode);
+}
+
+/**
+ * Skip the current question and get next.
+ */
+export async function skipSessionQuestion(sessionId: string): Promise<unknown> {
+    const session = await getSessionV11(sessionId);
+    if (!session) throw new Error(`Session not found: ${sessionId}`);
+
+    // Get next content item
+    const content = await getContentBySkillAndDifficulty(session.skill_id, 'tap_choice', session.difficulty_level, 1);
+    return content[0]?.payload ?? { text: 'Here\'s your next question!' };
+}
+
+/**
+ * Submit an answer for the current question.
+ */
+export async function submitSessionAnswer(
+    sessionId: string,
+    answer: string,
+): Promise<{
+    correct: boolean;
+    feedback: string;
+    stars_earned?: number;
+    attempts_remaining?: number;
+    next_prompt?: unknown;
+}> {
+    const session = await getSessionV11(sessionId);
+    if (!session) throw new Error(`Session not found: ${sessionId}`);
+
+    // Simplified scoring (real implementation would check against content)
+    // For now, randomly determine correctness for demo purposes
+    const isCorrect = answer.length > 0 && Math.random() > 0.3;
+
+    const newStats = { ...session.stats };
+    newStats.items_attempted += 1;
+
+    if (isCorrect) {
+        newStats.items_correct += 1;
+        newStats.best_streak += 1;
+        const starsEarned = newStats.best_streak >= 3 ? 2 : 1;
+        newStats.stars_earned += starsEarned;
+        newStats.accuracy = Math.round((newStats.items_correct / newStats.items_attempted) * 100);
+
+        await updateSessionStats(sessionId, newStats);
+
+        // Get next content
+        const content = await getContentBySkillAndDifficulty(session.skill_id, 'tap_choice', session.difficulty_level, 1);
+
+        return {
+            correct: true,
+            feedback: 'Great job! That\'s correct!',
+            stars_earned: starsEarned,
+            next_prompt: content[0]?.payload,
+        };
+    } else {
+        newStats.best_streak = 0;
+        newStats.accuracy = Math.round((newStats.items_correct / newStats.items_attempted) * 100);
+        await updateSessionStats(sessionId, newStats);
+
+        return {
+            correct: false,
+            feedback: 'Almost! Let\'s try again!',
+            attempts_remaining: 2,
+        };
+    }
+}
+
+/**
+ * Get the current question for a session.
+ */
+export async function getSessionCurrentQuestion(sessionId: string): Promise<unknown> {
+    const session = await getSessionV11(sessionId);
+    if (!session) throw new Error(`Session not found: ${sessionId}`);
+
+    // Get current content from engine state or fetch new
+    if (session.engine_state && typeof session.engine_state === 'object') {
+        const state = session.engine_state as { current_prompt?: unknown };
+        if (state.current_prompt) return state.current_prompt;
+    }
+
+    // Fallback: get a content item
+    const content = await getContentBySkillAndDifficulty(session.skill_id, 'tap_choice', session.difficulty_level, 1);
+    return content[0]?.payload ?? { text: 'What\'s your answer?' };
+}

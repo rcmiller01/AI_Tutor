@@ -1,0 +1,169 @@
+/**
+ * WordTapPopup styles
+ * Vocabulary popup for story mode
+ */
+
+.word-tap-popup {
+    position: fixed;
+    width: 280px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    animation: popIn 0.2s ease-out;
+    overflow: hidden;
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Header */
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1rem 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.popup-word {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-transform: capitalize;
+}
+
+.popup-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.popup-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Sections */
+.popup-section {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.popup-definition {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+    line-height: 1.4;
+}
+
+/* Sound it out */
+.sound-it-out {
+    background: #f8f9fa;
+}
+
+.section-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.sound-letters {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.sound-letter {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #007bff;
+    background: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    border: 2px solid #007bff;
+}
+
+.sound-separator {
+    color: #999;
+    margin: 0 0.125rem;
+    font-weight: 400;
+}
+
+/* Actions */
+.popup-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.popup-btn {
+    flex: 1;
+    min-height: 48px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.popup-btn:hover {
+    transform: scale(1.02);
+}
+
+.popup-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-sound {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-got-it {
+    background: #28a745;
+    color: white;
+}
+
+/* Arrow pointer */
+.word-tap-popup::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: white transparent transparent;
+}
+
+/* When popup is below the word */
+.word-tap-popup.below::after {
+    top: -10px;
+    bottom: auto;
+    border-width: 0 10px 10px;
+    border-color: transparent transparent white;
+}

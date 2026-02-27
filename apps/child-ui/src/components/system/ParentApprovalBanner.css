@@ -1,0 +1,115 @@
+/**
+ * ParentApprovalBanner styles
+ * Child-friendly design with large touch targets
+ */
+
+.parent-approval-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    border-radius: 16px;
+    border: 2px solid #ffc107;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    animation: slideIn 0.3s ease-out;
+    max-width: 400px;
+    margin: 1rem auto;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.approval-icon {
+    font-size: 2.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.approval-content {
+    text-align: center;
+}
+
+.approval-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #856404;
+}
+
+.approval-body {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #6c5a00;
+    line-height: 1.4;
+}
+
+.requested-item {
+    font-weight: 600;
+    color: #856404;
+}
+
+.approval-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+.approval-btn {
+    min-width: 120px;
+    min-height: 56px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.approval-btn:hover {
+    transform: scale(1.05);
+}
+
+.approval-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-alternative {
+    background: #17a2b8;
+    color: white;
+    box-shadow: 0 3px 0 #138496;
+}
+
+.btn-alternative:hover {
+    box-shadow: 0 4px 0 #138496;
+}
+
+.btn-dismiss {
+    background: #6c757d;
+    color: white;
+    box-shadow: 0 3px 0 #545b62;
+}
+
+.btn-dismiss:hover {
+    box-shadow: 0 4px 0 #545b62;
+}

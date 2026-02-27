@@ -1,0 +1,161 @@
+/**
+ * TimerLimitBanner styles
+ * Child-friendly design with visual status indicators
+ */
+
+.timer-limit-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+    max-width: 400px;
+    margin: 1rem auto;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Info state - plenty of time */
+.timer-banner-info {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+}
+
+.timer-banner-info .timer-title {
+    color: #155724;
+}
+
+.timer-banner-info .timer-body {
+    color: #1e7e34;
+}
+
+/* Warning state - time running low */
+.timer-banner-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    border: 2px solid #ffc107;
+}
+
+.timer-banner-warning .timer-title {
+    color: #856404;
+}
+
+.timer-banner-warning .timer-body {
+    color: #6c5a00;
+}
+
+.timer-banner-warning .timer-icon {
+    animation: wiggle 0.5s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotate(-5deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+}
+
+/* Exhausted state - no time left */
+.timer-banner-exhausted {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border: 2px solid #17a2b8;
+}
+
+.timer-banner-exhausted .timer-title {
+    color: #0c5460;
+}
+
+.timer-banner-exhausted .timer-body {
+    color: #117a8b;
+}
+
+.timer-icon {
+    font-size: 2.5rem;
+}
+
+.timer-content {
+    text-align: center;
+}
+
+.timer-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.timer-body {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.4;
+}
+
+.timer-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+.timer-btn {
+    min-width: 100px;
+    min-height: 56px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.timer-btn:hover {
+    transform: scale(1.05);
+}
+
+.timer-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-practice {
+    background: #28a745;
+    color: white;
+    box-shadow: 0 3px 0 #1e7e34;
+}
+
+.btn-practice:hover {
+    box-shadow: 0 4px 0 #1e7e34;
+}
+
+.btn-talk {
+    background: #007bff;
+    color: white;
+    box-shadow: 0 3px 0 #0062cc;
+}
+
+.btn-talk:hover {
+    box-shadow: 0 4px 0 #0062cc;
+}
+
+.btn-dismiss {
+    background: #6c757d;
+    color: white;
+    box-shadow: 0 3px 0 #545b62;
+}
+
+.btn-dismiss:hover {
+    box-shadow: 0 4px 0 #545b62;
+}

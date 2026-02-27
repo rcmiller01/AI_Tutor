@@ -2,6 +2,7 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
+import websocket from '@fastify/websocket';
 import { randomUUID } from 'node:crypto';
 import { healthRoutes } from './routes/health.js';
 import { sessionRoutes } from './routes/sessions.js';
@@ -12,6 +13,8 @@ import { childAuthRoutes } from './routes/child-auth.js';
 import { approvalRoutes } from './routes/approvals.js';
 import { worldsRoutes } from './routes/worlds.js';
 import { parentDashboardRoutes } from './routes/parent-dashboard.js';
+import { voiceRelayRoutes } from './routes/voice-relay.js';
+import { ttsRoutes } from './routes/tts.js';
 import { runAllSeeds } from './db/seed.js';
 import { setupAutoTimeout } from './jobs/session-timeout.js';
 import { contentGenWorker } from './services/content-gen-worker.js';
@@ -50,6 +53,10 @@ async function main() {
             'http://localhost:5174', // parent-portal dev
         ],
     });
+    // Phase 7: WebSocket support for voice relay
+    await app.register(websocket, {
+        options: { maxPayload: 1048576 }, // 1MB max for audio chunks
+    });
 
     // ── Routes ───────────────────────────────────────────────────────────────
     await app.register(healthRoutes, { prefix: '/api' });
@@ -63,6 +70,9 @@ async function main() {
     await app.register(worldsRoutes, { prefix: '/api' });
     // Phase 5: Parent dashboard
     await app.register(parentDashboardRoutes, { prefix: '/api' });
+    // Phase 7: Voice relay WebSocket and TTS
+    await app.register(voiceRelayRoutes, { prefix: '/api' });
+    await app.register(ttsRoutes, { prefix: '/api' });
 
     // ── Start ─────────────────────────────────────────────────────────────────
     try {

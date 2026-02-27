@@ -191,6 +191,8 @@ async function createDenialResponse(
     });
 
     // Emit telemetry events
+    const telemetryCtx = { session_id: null, child_id, household_id };
+
     await emitEvent(
         'policy.request_denied',
         {
@@ -198,7 +200,7 @@ async function createDenialResponse(
             requested_skill_id: requestedSkillId,
             requested_scope_tag: requestedWorldId,
         },
-        { session_id: null, child_id, household_id },
+        telemetryCtx,
     );
 
     await emitEvent(
@@ -209,7 +211,7 @@ async function createDenialResponse(
                 world_id: a.world_id,
             })),
         },
-        { session_id: null, child_id, household_id },
+        telemetryCtx,
     );
 
     await emitEvent(
@@ -219,8 +221,21 @@ async function createDenialResponse(
             request_type: requestType,
             denial_reason_code: denialReasonCode,
         },
-        { session_id: null, child_id, household_id },
+        telemetryCtx,
     );
+
+    // Emit flag.out_of_scope for scope-related denials
+    if (denialReasonCode === 'SCOPE_NOT_ALLOWED' || denialReasonCode === 'WORLD_NOT_ENABLED') {
+        await emitEvent(
+            'flag.out_of_scope',
+            {
+                child_id,
+                requested_scope_tag: requestedWorldId ?? 'unknown',
+                approval_id: approvalId,
+            },
+            telemetryCtx,
+        );
+    }
 
     return {
         allowed: false,

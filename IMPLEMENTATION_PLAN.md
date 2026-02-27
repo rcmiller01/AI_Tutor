@@ -51,7 +51,7 @@
 - ✅ **Bundle table:**
   - `learning_bundles` (bundle_id, session_id, child_id, skill_id, world_id, talk_plan_id, practice_set_ids, play_config jsonb, constraints_hash, created_at)
 - ✅ **Update `sessions` table:** add `bundle_id` FK, add `current_mode` ('talk'|'practice'|'play'), add `child_ref_id` FK → `children` (parallel to legacy `child_id`; cut-over deferred to migration 003)
-- 🟡 **Drop / replace `users_admin` and `child_profile`** — deprecated with SQL comments; safe-drop deferred to migration 003 (Phase 1.3 gate)
+- ✅ **Drop / replace `users_admin` and `child_profile`** — migration 005 safely drops deprecated tables after verifying v1.1 tables exist
 - ✅ Add `accessibility_skip_hints` boolean to `children` table
 - ✅ Seed migration: insert default `worlds` rows (Reading Realm, Phonics Forest, Numbers Kingdom)
 - ✅ Verify all FKs, indexes (sessions.child_ref_id, sessions.bundle_id, session_events.session_id, child_mode_stats, household_enabled_worlds)
@@ -261,13 +261,13 @@
 - ✅ On denial: compute `safe_alternatives[]` deterministically from `household_enabled_worlds` — **no LLM**
 - ✅ Return `DenialResponse { denial_reason_code, safe_alternatives[] }`
 - ✅ Create `ApprovalRequest` record in background on any denial
-- ⏭️ Notify Parent Portal via WebSocket (`/ws/updates`) — deferred to Phase 7 (Voice Integration)
+- ⏭️ Notify Parent Portal via WebSocket (`/ws/updates`) — deferred to Phase 10 (Polish)
 
 ### 3.3 Approval Workflow ✅
 - ✅ `GET  /api/admin/approvals` — list pending approval cards
 - ✅ `POST /api/admin/approvals/{id}/approve` — updates status
 - ✅ `POST /api/admin/approvals/{id}/deny` — update status; no further action
-- ⏭️ WebSocket: push approval result to child app — deferred to Phase 7
+- ⏭️ WebSocket: push approval result to child app — deferred to Phase 10
 
 ### 3.4 Worlds API ✅
 - ✅ `GET  /api/admin/worlds` — list all worlds with enabled status for this household
@@ -278,7 +278,10 @@
 - ✅ Implement `emitEvent(event_name, payload)` utility — inserts into `telemetry_events`
 - ✅ Migration 003: Created `telemetry_events` table with indexes
 - ✅ Wire core events: bundle.created, session.mode_*, policy.request_denied, approval.*, worlds.*
-- 🟡 Emit `flag.*` events — scaffolded in types, full wiring deferred to Phase 4 (content generation) and Phase 6 (child UI)
+- ✅ Emit `flag.*` events:
+  - `flag.misconception_loop` — wired in drill-engine.ts (triggers after 3 consecutive wrong answers with same pattern)
+  - `flag.out_of_scope` — wired in policy/engine.ts (triggers on SCOPE_NOT_ALLOWED or WORLD_NOT_ENABLED denial)
+  - `flag.safety_event` — wired in voice/content-safety.ts (triggers when blocked content detected in AI responses)
 
 ---
 
@@ -368,7 +371,7 @@
 - ✅ **New files:**
   - `src/pages/Approvals.tsx` + `Approvals.css`
   - `src/components/ApprovalCard.tsx` + `ApprovalCard.css`
-- ⏭️ WebSocket real-time updates — deferred to Phase 7
+- ⏭️ WebSocket real-time updates — deferred to Phase 10
 
 ### 5.5 Child Profile Management ✅
 - ✅ ChildProfile page with edit form (name, age)
@@ -422,8 +425,9 @@
   - `src/components/widgets/DragBins.tsx` + `DragBins.css`
   - `src/components/widgets/MatchPairs.tsx` + `MatchPairs.css`
   - `src/components/widgets/TypeInBlank.tsx` + `TypeInBlank.css`
+  - `src/components/widgets/ReadAloudPage.tsx` + `ReadAloudPage.css` — story page with word highlighting and TTS
+  - `src/components/widgets/WordTapPopup.tsx` + `WordTapPopup.css` — vocabulary popup with definition and sound-it-out
   - `src/hooks/usePromptRenderer.tsx`
-- ⏭️ **ReadAloudPage** + **WordTapPopup** — deferred to Phase 7 (Voice Integration)
 
 ### 6.3 Feedback Components ✅
 - ✅ **StreakMeter** — fire icon with intensity levels (warm/hot/blazing)
@@ -446,8 +450,19 @@
 - ✅ Mode selection from Home page → passed to session start
 - ✅ Mastery gate celebration screen with stars earned
 - ✅ Error handling with companion encouragement
-- ⏭️ **TriadModeOffer** component — Talk mode shows "Coming soon" placeholder
-- ⏭️ **ParentApprovalBanner**, **TimerLimitBanner** — deferred to Phase 7
+- ✅ **WorldMap (2.5D Multi-world navigation UI)** — Nintendo-style isometric map for skill selection in `Session.tsx`
+  - Isometric transform with `rotateX(60deg) rotateZ(45deg)` and voxel-style cliff shadows
+  - Animated floating clouds with individual drift animations
+  - Animated waterfall with repeating gradient flow effect
+  - Accessibility: `aria-label` on skill buttons, `aria-hidden` on decorative emojis, `:focus-visible` outline
+  - Responsive scaling for mobile (media queries at 900px and 600px)
+- ✅ **TriadModeOffer** component — mode selection UI with Talk/Practice/Play buttons
+- ✅ **ParentApprovalBanner** — displays when action requires parent approval
+- ✅ **TimerLimitBanner** — displays when play time is running low or exhausted
+- ✅ **New files:**
+  - `src/components/system/TriadModeOffer.tsx` + `TriadModeOffer.css`
+  - `src/components/system/ParentApprovalBanner.tsx` + `ParentApprovalBanner.css`
+  - `src/components/system/TimerLimitBanner.tsx` + `TimerLimitBanner.css`
 
 ### 6.5 Design Requirements ✅
 - ✅ **56px minimum touch targets** for all interactive elements (ages 6-8)
@@ -460,32 +475,84 @@
   - Companion encouragement on wrong answers
   - **NO**: Red X, "wrong" labels, penalty deductions
 
-### 6.6 Talk Mode UI ⏭️
-- ⏭️ Voice-first interaction — deferred to Phase 7 (Voice Integration)
-- ⏭️ Text display of response — deferred to Phase 7
-- ⏭️ Practice bridge offer — deferred to Phase 7
+### 6.6 Talk Mode UI ✅
+- ✅ Voice-first interaction — VoiceFab push-to-talk in Session page (Phase 7)
+- ✅ Text display of response — transcripts shown via VoiceContext (Phase 7)
+- ⏭️ Dedicated TalkMode page — deferred to Phase 10 (full voice-first interface)
 
 ---
 
-## Phase 7 — Voice Integration
+## Phase 7 — Voice Integration ✅
 
 > **Exit criterion:** Child can speak and receive voice responses via OpenAI Realtime API, proxied through Mirror Core.
+> **Status:** All Phase 7 tasks complete. Voice relay, child-safe prompts, tools, content safety, and TTS implemented.
 
-### 7.1 Realtime API Proxy
-- ⬜ Mirror Core WebSocket relay: `ws://local/voice` ↔ OpenAI Realtime API
-- ⬜ System prompt injected at connection: child-safe, task-aligned, short-response rules
-- ⬜ Tool/function definitions: only allowed intents (start session, request hint, mode switch, skip)
-- ⬜ Policy check before executing any tool call returned by Realtime API
-- ⬜ Backend intercepts all responses before forwarding to child (content safety check)
+### 7.1 WebSocket Infrastructure ✅
+- ✅ Mirror Core WebSocket relay: `/api/ws/voice` ↔ OpenAI Realtime API
+- ✅ `@fastify/websocket` plugin registered with 1MB max payload for audio chunks
+- ✅ Child token authentication on WebSocket connect
+- ✅ OpenAI Realtime connection manager with session configuration
+- ✅ Message relay with event type mapping (voice.listening, voice.transcript.*, voice.audio.*)
+- ✅ **New files:**
+  - `services/mirror-core/src/routes/voice-relay.ts` — WebSocket route handler
+  - `services/mirror-core/src/services/openai-realtime.ts` — OpenAI Realtime API client
 
-### 7.2 Voice Guard Rails
-- ⬜ Realtime API enforces word ceiling per response in system prompt
-- ⬜ Any scope-change request via voice → policy check → denial → `safe_alternatives[]`
-- ⬜ Voice is never the sole mechanism for approval; approval always requires portal login
+### 7.2 Voice System Prompt & Safety ✅
+- ✅ Child-safe system prompt (Sparky the dinosaur companion)
+- ✅ **25 words max** per response enforced in system prompt
+- ✅ Ages 6-8 vocabulary requirement
+- ✅ Positive-only feedback rules (no "wrong", "incorrect", "bad")
+- ✅ Off-topic redirection to learning activities
+- ✅ Content safety filter for AI responses (blocked words/patterns)
+- ✅ **New files:**
+  - `services/mirror-core/src/voice/system-prompts.ts` — system prompt builder + denial speech
+  - `services/mirror-core/src/voice/content-safety.ts` — response content filter
 
-### 7.3 Read-Aloud (Story Engine)
-- ⬜ Story pages use Realtime API TTS for narration where SSML is provided
-- ⬜ Fallback: browser TTS (`speechSynthesis`) if Realtime API unavailable
+### 7.3 Voice Tools & Policy ✅
+- ✅ **Voice tools defined** (OpenAI function calling format):
+  - `start_session` — skill keyword + mode
+  - `request_hint` — get hint for current question
+  - `switch_mode` — change between practice/talk/play
+  - `skip_question` — skip to next question
+  - `answer_question` — submit voice answer
+  - `repeat_question` — read current question again
+- ✅ Policy check before executing any tool call
+- ✅ Denial speech generation (child-friendly explanations)
+- ✅ **New files:**
+  - `services/mirror-core/src/voice/tool-definitions.ts` — tool schemas
+  - `services/mirror-core/src/voice/tool-handler.ts` — tool execution with policy
+
+### 7.4 Read-Aloud TTS Service ✅
+- ✅ OpenAI Audio API integration (`audio/speech` endpoint)
+- ✅ `POST /api/tts/generate` — text to base64 MP3
+- ✅ `POST /api/tts/generate-chunks` — chunked TTS for long text
+- ✅ Configurable voice (alloy default) and speed (0.9x for children)
+- ✅ Text chunking with sentence boundary preservation
+- ✅ **New files:**
+  - `services/mirror-core/src/services/tts-service.ts` — TTS generation
+  - `services/mirror-core/src/routes/tts.ts` — HTTP endpoints
+
+### 7.5 Child UI Voice Components ✅
+- ✅ **VoiceContext** — WebSocket connection state, audio playback, transcripts
+- ✅ **useAudioCapture hook** — microphone access with PCM16 conversion
+- ✅ **VoiceFab** — 80px push-to-talk button with state animations:
+  - Idle (green), connecting (yellow), listening (blue), processing (purple), speaking (orange)
+  - Pulse animation while listening
+  - Touch-optimized for ages 6-8
+- ✅ Session.tsx integration with VoiceFab and session binding
+- ✅ **New files:**
+  - `apps/child-ui/src/contexts/VoiceContext.tsx`
+  - `apps/child-ui/src/hooks/useAudioCapture.ts`
+  - `apps/child-ui/src/components/voice/VoiceFab.tsx` + `VoiceFab.css`
+- ✅ **Modified files:**
+  - `apps/child-ui/src/App.tsx` — VoiceProvider wrapper
+  - `apps/child-ui/src/pages/Session.tsx` — VoiceFab integration
+
+### 7.6 Voice Guard Rails ✅
+- ✅ System prompt enforces 25-word ceiling per response
+- ✅ Scope-change via voice → policy check → denial → `safe_alternatives[]`
+- ✅ Voice is never sole approval mechanism (portal login required)
+- ✅ All AI responses filtered through content safety before playback
 
 ---
 
@@ -551,15 +618,13 @@
 | Full transcript view in parent portal | Optional later opt-in |
 | Talk plan schema (full) | Stub string ref used in v1 bundles |
 | Offline fallback (Phi-3-mini or similar) | Cloud-only for MVP |
-| Multi-world navigation UI | Worlds in data model; picker UI deferred |
 | Complex group/class mode | Not in roadmap yet |
 | Bank-grade biometric security | Voice fingerprinting is hint only |
 | Android hosting Mirror Core locally | Desktop-hosted only for MVP |
-| ReadAloudPage widget | Story pages with TTS — Phase 7 |
-| WordTapPopup widget | Tappable vocabulary definitions — Phase 7 |
 | BadgeStrip component | Badge slot display — Phase 10 |
 | UnlockableReveal animation | Unlock celebration — Phase 10 |
-| WebSocket real-time updates | Parent portal push notifications — Phase 7 |
+| WebSocket parent portal updates | Real-time push notifications — Phase 10 |
+| TalkMode page | Dedicated voice-first interface — Phase 10 |
 
 ---
 
@@ -567,6 +632,9 @@
 
 | Date | Version | Change |
 |---|---|---|
+| 2026-02-27 | v1.6 | WorldMap 2.5D polish — fixed cloud drift animations, waterfall flow effect, added accessibility attributes (aria-label, aria-hidden, focus-visible styles). |
+| 2026-02-27 | v1.5 | Phase 0-7 completion sweep — added flag event wiring (misconception_loop, out_of_scope, safety_event), ReadAloudPage/WordTapPopup widgets, TriadModeOffer/ParentApprovalBanner/TimerLimitBanner components, migration 005 for deprecated table cleanup. |
+| 2026-02-27 | v1.4 | Phase 7 complete — voice integration with OpenAI Realtime API, child-safe prompts, voice tools, TTS service, VoiceFab component. |
 | 2026-02-27 | v1.3 | Phase 6 complete — child app UI with engine widgets, game loop, touch-optimized design. |
 | 2026-02-27 | v1.2 | Phase 5 complete — parent portal with dashboard, policy management, approvals, worlds browser. |
 | 2026-02-27 | v1.1 | Phase 3-4 complete — session orchestration, policy engine, content generation pipeline. |

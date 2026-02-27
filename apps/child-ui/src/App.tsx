@@ -6,6 +6,7 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ChildAuthProvider, useChildAuth } from './contexts/ChildAuthContext';
+import { VoiceProvider } from './contexts/VoiceContext';
 import { ProfilePicker } from './pages/ProfilePicker';
 import { Home } from './pages/Home';
 import { Session } from './pages/Session';
@@ -63,9 +64,11 @@ export default function App() {
     return (
         <BrowserRouter>
             <ChildAuthProvider>
-                <div className="app">
-                    <AppRoutes />
-                </div>
+                <VoiceProvider>
+                    <div className="app">
+                        <AppRoutes />
+                    </div>
+                </VoiceProvider>
             </ChildAuthProvider>
         </BrowserRouter>
     );

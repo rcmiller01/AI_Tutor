@@ -6,17 +6,14 @@
 
 import { useMemo } from 'react';
 import type { PromptPayload } from '@mirror/schemas';
-import { TapChoice, type TapChoiceProps } from '../components/widgets/TapChoice';
-import { DragBins, type DragBinsProps } from '../components/widgets/DragBins';
-import { MatchPairs, type MatchPairsProps } from '../components/widgets/MatchPairs';
-import { TypeInBlank, type TypeInBlankProps } from '../components/widgets/TypeInBlank';
+import { TapChoice } from '../components/widgets/TapChoice';
+import { DragBins } from '../components/widgets/DragBins';
+import { MatchPairs } from '../components/widgets/MatchPairs';
+import { TypeInBlank } from '../components/widgets/TypeInBlank';
+import { ReadAloudPage } from '../components/widgets/ReadAloudPage';
 
-// Widget component types
-type WidgetComponent =
-    | typeof TapChoice
-    | typeof DragBins
-    | typeof MatchPairs
-    | typeof TypeInBlank;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WidgetComponent = React.ComponentType<any>;
 
 // Map template IDs to widget components
 const WIDGET_MAP: Record<string, WidgetComponent> = {
@@ -24,11 +21,14 @@ const WIDGET_MAP: Record<string, WidgetComponent> = {
     drag_bins: DragBins,
     match_pairs: MatchPairs,
     type_in_blank: TypeInBlank,
+    story_page: ReadAloudPage,
+    // comprehension_q uses TapChoice format
+    comprehension_q: TapChoice,
 };
 
 interface UsePromptRendererResult {
     Widget: WidgetComponent | null;
-    widgetProps: TapChoiceProps | DragBinsProps | MatchPairsProps | TypeInBlankProps | Record<string, never>;
+    widgetProps: Record<string, unknown>;
 }
 
 /**
@@ -59,6 +59,22 @@ function transformContent(prompt: PromptPayload): Record<string, unknown> {
             return {
                 promptText: content.prompt_text ?? '',
                 placeholder: content.placeholder ?? 'Type your answer...',
+            };
+
+        case 'story_page':
+            return {
+                content: {
+                    page_number: content.page_number ?? 1,
+                    page_text: content.page_text ?? '',
+                    word_spans: content.word_spans ?? [],
+                    illustration_key: content.illustration_key,
+                },
+            };
+
+        case 'comprehension_q':
+            return {
+                promptText: content.question ?? '',
+                choices: content.choices ?? [],
             };
 
         default:

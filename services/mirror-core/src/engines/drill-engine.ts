@@ -16,8 +16,13 @@ import {
     insertSession,
     updateSession,
     insertSessionEvent,
+    getChildProfile,
 } from '../db/queries.js';
 import { generateContentBatch } from '../services/content-generator.js';
+import { emitEvent, type TelemetryContext } from '../db/telemetry.js';
+
+// Threshold for misconception loop flag
+const MISCONCEPTION_LOOP_THRESHOLD = 3;
 
 // ─── In-Memory Session State ─────────────────────────────────
 
@@ -37,6 +42,11 @@ interface DrillState {
     totalItemsAttempted: number;
     totalItemsCorrect: number;
     totalHintsUsed: number;
+    // Misconception loop tracking
+    consecutiveWrongCount: number;
+    lastMisconceptionPattern: string | null;
+    childId: string;
+    householdId: string;
 }
 
 const activeSessions = new Map<string, DrillState>();
@@ -60,16 +70,26 @@ function getStreakSound(streak: number): SoundEffect | undefined {
 // ─── Public API ──────────────────────────────────────────────
 
 const DEFAULT_CHILD_ID = '00000000-0000-0000-0000-000000000001';
+const DEFAULT_HOUSEHOLD_ID = '00000000-0000-0000-0000-000000000001';
 
 export async function startDrillSession(
     skillId: string,
     childId: string = DEFAULT_CHILD_ID,
+    householdId?: string,
 ): Promise<{ sessionId: string }> {
     const spec = await getSkillSpec(skillId);
     if (!spec) throw new Error(`Skill not found: ${skillId}`);
     if (!spec.allowed_engine_types.includes('MICRO_SKILL_DRILL')) {
         throw new Error(`Skill ${skillId} does not support MICRO_SKILL_DRILL`);
     }
+
+    // Get household ID from child profile if not provided
+    let resolvedHouseholdId = householdId;
+    if (!resolvedHouseholdId && childId !== DEFAULT_CHILD_ID) {
+        const profile = await getChildProfile(childId);
+        resolvedHouseholdId = profile?.household_id ?? DEFAULT_HOUSEHOLD_ID;
+    }
+    resolvedHouseholdId = resolvedHouseholdId ?? DEFAULT_HOUSEHOLD_ID;
 
     const startDifficulty = 1;
     const content = await getContentBySkillAndDifficulty(skillId, 'tap_choice', startDifficulty);
@@ -101,6 +121,11 @@ export async function startDrillSession(
         totalItemsAttempted: 0,
         totalItemsCorrect: 0,
         totalHintsUsed: 0,
+        // Misconception loop tracking
+        consecutiveWrongCount: 0,
+        lastMisconceptionPattern: null,
+        childId,
+        householdId: resolvedHouseholdId,
     };
 
     activeSessions.set(session.session_id, state);
@@ -203,9 +228,39 @@ export async function submitInteraction(
         state.totalStarsEarned += starsEarned;
 
         soundEffect = getStreakSound(state.streak) ?? 'correct';
+
+        // Reset misconception tracking on correct answer
+        state.consecutiveWrongCount = 0;
+        state.lastMisconceptionPattern = null;
     } else {
         state.streak = 0;
         soundEffect = 'incorrect';
+
+        // Track misconception pattern
+        const misconceptionPattern = detectMisconceptionPattern(state.skillSpec, choiceId, payload);
+        if (misconceptionPattern) {
+            if (state.lastMisconceptionPattern === misconceptionPattern) {
+                state.consecutiveWrongCount++;
+            } else {
+                state.consecutiveWrongCount = 1;
+                state.lastMisconceptionPattern = misconceptionPattern;
+            }
+
+            // Emit flag if threshold reached
+            if (state.consecutiveWrongCount >= MISCONCEPTION_LOOP_THRESHOLD) {
+                const telemetryCtx: TelemetryContext = {
+                    session_id: sessionId,
+                    child_id: state.childId,
+                    household_id: state.householdId,
+                };
+                emitEvent('flag.misconception_loop', {
+                    child_id: state.childId,
+                    skill_id: state.skillSpec.skill_id,
+                    pattern: misconceptionPattern,
+                    consecutive_count: state.consecutiveWrongCount,
+                }, telemetryCtx).catch(err => console.error('Failed to emit misconception flag:', err));
+            }
+        }
     }
 
     // Check mastery / level progression
@@ -387,4 +442,45 @@ function shuffleArray<T>(arr: T[]): T[] {
         [copy[i], copy[j]] = [copy[j], copy[i]];
     }
     return copy;
+}
+
+/**
+ * Detect if a wrong answer matches a known misconception pattern.
+ * Returns the pattern name if matched, null otherwise.
+ */
+function detectMisconceptionPattern(
+    skillSpec: SkillSpec,
+    wrongChoiceId: string,
+    payload: TapChoiceItem,
+): string | null {
+    const misconceptions = skillSpec.misconceptions ?? [];
+    if (misconceptions.length === 0) return null;
+
+    // Find the wrong choice that was selected
+    const wrongChoice = payload.choices.find(c => c.choice_id === wrongChoiceId);
+    if (!wrongChoice) return null;
+
+    // Check against known misconception patterns
+    for (const misconception of misconceptions) {
+        const pattern = misconception.pattern.toLowerCase();
+        const choiceLabel = wrongChoice.label.toLowerCase();
+
+        // Simple pattern matching: check if the choice matches the misconception pattern
+        if (choiceLabel.includes(pattern) || pattern.includes(choiceLabel)) {
+            return misconception.pattern;
+        }
+
+        // Regex pattern matching for more complex patterns
+        try {
+            const regex = new RegExp(pattern, 'i');
+            if (regex.test(choiceLabel)) {
+                return misconception.pattern;
+            }
+        } catch {
+            // Invalid regex, skip
+        }
+    }
+
+    // Generic pattern: track repeated wrong choice selections
+    return `wrong_choice:${wrongChoiceId}`;
 }

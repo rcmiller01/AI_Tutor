@@ -1,0 +1,314 @@
+/* apps/child-ui/src/components/navigation/WorldMap.css */
+
+.world-map-wrapper {
+    width: 100%;
+    flex: 1;
+    min-height: 50vh;
+    background-color: #5BC1FF;
+    /* Bright water */
+    overflow: hidden;
+    position: relative;
+    border-radius: 24px;
+    box-shadow: inset 0 0 40px rgba(0, 100, 255, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1200px;
+    margin-top: 2rem;
+}
+
+.world-map-wrapper::after {
+    /* Optional water shimmer */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+}
+
+.world-map-container {
+    width: 700px;
+    height: 700px;
+    transform-style: preserve-3d;
+    transform: rotateX(60deg) rotateZ(45deg);
+    /* The classic isometric tilt */
+    position: relative;
+    animation: floatMap 8s ease-in-out infinite alternate;
+}
+
+@keyframes floatMap {
+    0% {
+        transform: rotateX(60deg) rotateZ(45deg) translateZ(0px);
+    }
+
+    100% {
+        transform: rotateX(60deg) rotateZ(45deg) translateZ(15px);
+    }
+}
+
+/* Base Landmass Style */
+.landmass {
+    position: absolute;
+    border-radius: 40px;
+    /* soft edges on top */
+    transform-style: preserve-3d;
+    box-shadow:
+        -1px 1px 0 #D08C44,
+        -2px 2px 0 #CC8942,
+        -3px 3px 0 #C7853F,
+        -4px 4px 0 #C3813C,
+        -5px 5px 0 #BE7D3A,
+        -6px 6px 0 #B97A37,
+        -7px 7px 0 #B57635,
+        -8px 8px 0 #B07232,
+        -9px 9px 0 #A86C2D,
+        -10px 10px 0 #A36729,
+        -15px 15px 25px rgba(0, 40, 100, 0.4);
+    /* Water drop shadow */
+    transition: transform 0.3s ease;
+}
+
+/* Island variants */
+.grass-island {
+    background-color: #57E32C;
+    border: 3px solid #4BCA24;
+}
+
+.desert-island {
+    background-color: #FFDE73;
+    border: 3px solid #E6C867;
+}
+
+/* Path connecting islands */
+.map-path {
+    position: absolute;
+    border-bottom: 8px dotted rgba(255, 255, 255, 0.8);
+    transform: translateZ(5px);
+}
+
+/* Upright objects face the camera */
+.upright-object {
+    position: absolute;
+    transform: translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg);
+    filter: drop-shadow(0 15px 10px rgba(0, 0, 0, 0.3));
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    /* Let clicks pass through if it's just decor */
+}
+
+/* Nodes to enter levels */
+.level-node {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    transform: translate(-50%, -50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-style: preserve-3d;
+}
+
+.level-node:hover {
+    transform: translate(-50%, -50%) translateZ(40px) scale(1.15);
+}
+
+.level-node:active {
+    transform: translate(-50%, -50%) translateZ(10px) scale(0.95);
+}
+
+.level-node:focus-visible {
+    outline: 4px solid #FFD700;
+    outline-offset: 4px;
+    border-radius: 50%;
+}
+
+/* Internal elements inside level node should inherit clickability */
+.level-node .upright-object {
+    pointer-events: auto;
+}
+
+/* Hover label */
+.level-hover-text {
+    top: -40px;
+    left: 50%;
+    /* Override standard upright object transform to move it up */
+    transform: translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(-80px);
+    background: white;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #333;
+    white-space: nowrap;
+    opacity: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    border: 3px solid #FFDE73;
+}
+
+.level-node:hover .level-hover-text {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) translateY(-100px);
+}
+
+/* Sizing for decorations */
+.map-castle {
+    font-size: 5rem;
+}
+
+.map-star {
+    font-size: 4.5rem;
+}
+
+.decor-tree {
+    font-size: 2.5rem;
+}
+
+.decor-cactus {
+    font-size: 2.2rem;
+}
+
+.decor-mushroom {
+    font-size: 2rem;
+}
+
+.decor-boat {
+    font-size: 3rem;
+    transform: translate(-50%, -50%) rotateZ(-45deg) rotateX(-60deg) rotateY(-20deg);
+}
+
+.decor-rock {
+    font-size: 2rem;
+}
+
+.decor-pipe {
+    font-size: 2.2rem;
+    filter: hue-rotate(90deg);
+    /* Make it look more like a green mario pipe */
+}
+
+.decor-cloud {
+    position: absolute;
+    font-size: 4rem;
+    opacity: 0.9;
+    filter: drop-shadow(0 40px 15px rgba(0, 0, 0, 0.15));
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Individual cloud positions and animations */
+.cloud-1 {
+    top: 5%;
+    left: 15%;
+    animation: drift1 20s linear infinite alternate;
+}
+
+.cloud-2 {
+    top: 25%;
+    right: 5%;
+    animation: drift2 18s linear infinite alternate;
+}
+
+.cloud-3 {
+    bottom: 15%;
+    left: 5%;
+    animation: drift3 22s linear infinite alternate;
+}
+
+@keyframes drift1 {
+    0% {
+        transform: translateZ(150px) rotateZ(-45deg) rotateX(-60deg) translateX(-30px);
+    }
+    100% {
+        transform: translateZ(150px) rotateZ(-45deg) rotateX(-60deg) translateX(30px);
+    }
+}
+
+@keyframes drift2 {
+    0% {
+        transform: translateZ(120px) rotateZ(-45deg) rotateX(-60deg) translateX(20px);
+    }
+    100% {
+        transform: translateZ(120px) rotateZ(-45deg) rotateX(-60deg) translateX(-20px);
+    }
+}
+
+@keyframes drift3 {
+    0% {
+        transform: translateZ(100px) rotateZ(-45deg) rotateX(-60deg) translateX(-25px);
+    }
+    100% {
+        transform: translateZ(100px) rotateZ(-45deg) rotateX(-60deg) translateX(25px);
+    }
+}
+
+/* ─── Waterfall Effect ─── */
+.waterfall {
+    position: absolute;
+    width: 60px;
+    height: 35px;
+    /* Repeating gradient for flowing water effect */
+    background: repeating-linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.9) 0px,
+        rgba(91, 193, 255, 0.8) 10px,
+        rgba(255, 255, 255, 0.9) 20px
+    );
+    background-size: 100% 40px;
+    /* Angle the waterfall down the voxel cliff face */
+    transform: translateZ(-20px) rotateX(90deg) rotateY(0deg) translateY(18px);
+    transform-origin: top;
+    border-radius: 4px;
+    animation: waterfallFlow 0.8s infinite linear;
+}
+
+@keyframes waterfallFlow {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 0 40px;
+    }
+}
+
+/* ─── Bridge between islands ─── */
+.map-bridge {
+    position: absolute;
+    background-color: #A36729;
+    border-top: 4px solid #C7853F;
+    border-bottom: 4px solid #8B5A2B;
+    transform: translateZ(5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+    /* Make it look like wooden planks via repeating linear gradient */
+    background-image: repeating-linear-gradient(90deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 0, 0, 0.2) 10px,
+            rgba(0, 0, 0, 0.2) 12px);
+}
+
+/* Mobile scaling to keep map visible */
+@media (max-width: 900px) {
+    .world-map-container {
+        transform: scale(0.7) rotateX(60deg) rotateZ(45deg);
+    }
+}
+
+@media (max-width: 600px) {
+    .world-map-container {
+        transform: scale(0.5) rotateX(60deg) rotateZ(45deg);
+    }
+
+    .world-map-wrapper {
+        min-height: 40vh;
+        margin-top: 1rem;
+    }
+}
