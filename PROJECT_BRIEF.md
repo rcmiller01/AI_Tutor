@@ -30,7 +30,6 @@ Parents/guardians who want enforceable limits, approvals, and clear progress vis
 
 - Fully offline operation (cloud-only LLM for MVP).
 - Bank-grade biometric security (voice identity helps but isn't sole gate).
-- Full multi-child/group features (future).
 - Complex "open world" games.
 
 ---
@@ -54,6 +53,30 @@ Parents/guardians who want enforceable limits, approvals, and clear progress vis
 
 ---
 
+## Core Loop: Talk-first Triad
+
+**Default entry mode = Talk.**
+After the child speaks or taps to start, the tutor begins in Talk and then offers a mode choice:
+*"Want to talk, practice, or play?"*
+
+Triad always available in-session:
+- **Talk**: conversational Q&A, guided learning
+- **Practice**: micro-items (3–7) aligned to detected skill
+- **Play**: short game session aligned to same skill
+
+**Preference learning (per child):**
+- Track a `preferred_mode` per child.
+- The system may bias the initial suggestion over time (e.g., *"Want to play or practice?"*) but must always keep all 3 modes accessible.
+
+### Talk vs Practice Policy
+- Talk is allowed to answer questions directly, but must remain:
+  - concise, age-appropriate, scoped
+  - aligned with allowed skills/worlds.
+- If a request is drillable, Talk should offer Practice (*"Want to try a few together?"*).
+- Practice may be delivered conversationally (same content objects, talk wrapper).
+
+---
+
 ## "Locked Tutor" Rules (Anti-Chaos Contract)
 
 ### Deterministic runtime decides:
@@ -69,6 +92,22 @@ Parents/guardians who want enforceable limits, approvals, and clear progress vis
 - Short kid-friendly hints constrained to a style guide
 - **No freeform tutoring essays in child mode.**
 
+### Out-of-scope Handling
+When a child request is denied, the system must immediately offer 2–3 allowed alternatives that are relevant (*"I can help with spelling, addition, or reading—pick one."*). The goal is smooth redirection, not dead ends.
+
+---
+
+## Pedagogy Requirement: Hint Ladder
+
+When the child is incorrect or stuck, the system uses a deterministic hint ladder (default 3–5 levels, configurable in parent/admin):
+1. **Nudge**
+2. **Strategy reminder**
+3. **Worked example** (near transfer)
+4. **Partial fill-in**
+5. **Bottom-out** (answer/step) + immediate near-transfer attempt
+
+**Rule:** Must not skip straight to bottom-out except by policy (e.g., accessibility setting).
+
 ---
 
 ## Parent Approval Flow
@@ -79,16 +118,36 @@ Parents/guardians who want enforceable limits, approvals, and clear progress vis
 
 ---
 
+## Parent Observability
+
+Parent portal shows:
+- **Session summaries** (skills, time, progress signals)
+- **Flagged moments:**
+  - repeated misconception / stuck loops
+  - out-of-scope requests
+  - safety/policy events
+- **Transcripts** are not shown by default (optional later if desired).
+
+---
+
 ## Identity, Roles & Enforcement
+
+### Household Account Model (v1)
+- **Parent account:** email/password login.
+- **Parent security options:** Authenticator app (TOTP) and/or Passkeys (optional but supported).
+- **Child profiles:** no password/PIN, selected via avatar/name at start.
+
+**Rationale / UX goal:** Simplest onboarding for non-technical households while keeping parent controls gated.
+
+**Constraints:** Child profiles operate within strictly scoped educational content + policy rails; parent approval flow remains the guard for any scope change.
 
 | Role | Permissions |
 |---|---|
 | **Parent (Admin)** | Policies, approvals, limits, dashboard |
 | **Child (Standard)** | Can request sessions, cannot change policies |
-| *(Future)* | Multiple children + group mode |
 
 - Parent portal requires login created at setup.
-- Child device sessions run with local "child role" by default.
+- Child device sessions run with local "child role" by default (multi-child profiles included in v1).
 - Optional local speaker recognition (voice fingerprinting) can suggest who is speaking, but **all policy changes stay in parent portal**.
 
 ---
@@ -99,6 +158,15 @@ Parents/guardians who want enforceable limits, approvals, and clear progress vis
 - Controller
 - Voice
 - *(Mouse/keyboard not required)*
+
+---
+
+## Rewards & Motivation
+
+- **Default screen** includes a child-selected companion character (v1: "cute dinosaur").
+- **Unlockables** (cosmetics) earned through learning actions.
+- **Badge strip** with empty slots that fill.
+- **No streak penalties.** Rewards emphasize progress and mastery.
 
 ---
 

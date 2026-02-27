@@ -1,4 +1,4 @@
-# Architecture Spec: Magic Mirror Tutor + Locked Learning Games (v1)
+# Architecture Spec: Magic Mirror Tutor + Locked Learning Games (v1.1)
 
 ## 0) Scope and Invariants
 
@@ -10,7 +10,7 @@ This spec defines the **runtime architecture** for a web-based, cross-platform s
 - LLM is **never** the runtime brain; it only generates bounded content objects.
 - **All policy changes** happen in the **Parent Portal** (admin login).
 - Analytics are **local-only**, stored in DB; Parent Portal reads from DB.
-- Day 1: **single child profile**.
+- Day 1: **household model** — one parent account, multiple child profiles.
 
 ---
 
@@ -109,16 +109,20 @@ This spec defines the **runtime architecture** for a web-based, cross-platform s
    - Mark skill mastered, or
    - Schedule remediation branch (still deterministic).
 
-### 2.2 Out-of-scope request (Parent Approval Card)
+### 2.2 Out-of-scope request (Parent Approval Card + Redirect)
 
 1. Child requests something outside policy or current scope.
-2. Backend creates `ApprovalRequest` record + notifies Parent Portal.
-3. Parent logs in and approves/denies.
-4. If approved:
+2. **Policy engine** evaluates and returns:
+   - `denial_reason_code` (internal, not surfaced verbatim to child)
+   - `safe_alternatives[]` — 2–3 allowed next actions, each anchored to an enabled world + current skill. Generated deterministically from enabled worlds + household policy; requires no LLM or web access.
+3. Backend creates `ApprovalRequest` record + notifies Parent Portal.
+4. Child immediately sees a friendly redirect: *"I can help with spelling, addition, or reading — pick one."* (populated from `safe_alternatives[]`).
+5. Parent logs in and approves/denies.
+6. If approved:
    - Backend creates a **new Session** with approved `skill_id`/scope
    - Child receives notification and can start the new session
-5. If denied:
-   - Child receives friendly denial + suggested allowed alternatives.
+7. If denied:
+   - `safe_alternatives[]` are re-offered; no dead ends.
 
 ---
 
@@ -158,7 +162,24 @@ Engines are implemented as modules that conform to this interface:
 | `maybe_generate_content` | `(engine_state) -> ContentGenJob?` |
 | `apply_generated_content` | `(engine_state, ContentObject) -> engine_state` |
 | `is_mastered` | `(engine_state) -> MasteryResult` |
-| `render_hints` | `(score_result, skill_spec) -> HintPayload` |
+| `render_hints` | `(engine_state, score_result, skill_spec) -> HintPayload` |
+
+#### Hint Ladder Enforcement
+
+`engine_state` tracks a `hint_level` per content instance attempt. `render_hints()` selects the next hint rung **deterministically** from:
+
+- misconception type (mapped in `skill_spec.misconceptions[]`)
+- current `hint_level` (incremented on each hint request)
+- policy caps (`hint_policy.max_hints`, default 3–5, configurable per child in parent/admin)
+
+**Hint ladder rungs (default order):**
+1. Nudge
+2. Strategy reminder
+3. Worked example (near transfer)
+4. Partial fill-in
+5. Bottom-out (answer/step) + engine schedules a **near-transfer follow-up item** (same `skill_id`, different surface form)
+
+**Rule:** Must not skip to bottom-out except by explicit accessibility policy flag on the child profile.
 
 ---
 
@@ -235,6 +256,25 @@ LLM interactions are mediated via a job queue to enforce rails.
 - No disallowed topics (policy-based content safety)
 - If validation fails: reject and either regenerate with tighter prompt or fall back to curated content
 
+### 4.4 LearningBundle (Triad Session Artifact)
+
+A `LearningBundle` binds Talk, Practice, and Play around a single skill focus for a session. It ensures all three modes share the same content context without requiring the LLM at runtime.
+
+| Field | Description |
+|---|---|
+| `bundle_id` | UUID |
+| `session_id` | FK to session |
+| `child_id` | FK to child profile |
+| `skill_id` | Skill in focus |
+| `world_id` | Optional world context |
+| `talk_plan_id` | Bounded talk plan / scripted conversational steps |
+| `practice_set_ids[]` | Array of selected `content_object` IDs for Practice mode |
+| `play_config` | `{ engine_type, template_id, params }` for Play mode |
+| `constraints_hash` | Hash of generator constraints used to build this bundle |
+| `created_at` | Timestamp |
+
+**Design principle:** The bundle is created once at session start (or on mode switch) and reused across all three modes. LLM may assist in bundle creation offline, but is not called at runtime when navigating between modes.
+
 ---
 
 ## 5) Policy Engine + Approvals
@@ -281,27 +321,43 @@ REQUESTED → NOTIFIED → APPROVED | DENIED
 
 ## 6) Identity, Authentication & Authorization
 
-### 6.1 Parent Portal authentication
+### 6.1 Household Account Model
 
-- Admin account created at setup.
-- Auth method: username/email + password (hashed) + optional passkey later.
+**Tables / entities:**
+
+| Table | Key Fields |
+|---|---|
+| `parents` | `id`, `email`, `password_hash`, `mfa_enabled`, `passkey_enabled`, `created_at` |
+| `households` | `id`, `parent_id`, `settings_json` |
+| `children` | `id`, `household_id`, `display_name`, `avatar_id`, `preferred_mode`, `created_at` |
+| `child_mode_stats` | `child_id`, `mode`, `recent_count`, `lifetime_count`, `updated_at` |
+
+**Session linkage:** `sessions.child_id` is **required**.
+
+### 6.2 Parent Portal authentication
+
+- Household parent account created at setup (email + password).
+- **Optional MFA:** Authenticator app (TOTP) and/or Passkeys.
 - Issues:
   - `admin_access_token` (short lived)
   - `admin_refresh_token` (longer lived)
 
-### 6.2 Child device session
+### 6.3 Child profile selection
 
-- Child App runs with a device-bound token: `device_session_token`.
+- Child profiles have **no password or PIN**.
+- Child selects their profile via avatar/name picker at session start.
+- Child App runs with a device-and-child-bound token: `child_session_token`.
 - Child cannot call admin endpoints.
+- `preferred_mode` tracked per child in `children` table (or `child_mode_stats`); used to bias triad mode suggestions over time.
 
-### 6.3 Local speaker recognition (optional signal)
+### 6.4 Local speaker recognition (optional signal)
 
 - Stored locally:
-  - Speaker embeddings per enrolled user (parent, later child)
+  - Speaker embeddings per enrolled user (parent + child profiles)
 - Used only as:
   - UI hint ("Recognized: Parent?")
-  - Optional convenience step for approvals (but approvals still require portal login)
-  - Future multi-child auto-selection (not Day 1)
+  - Optional auto-selection of child profile at start (convenience only)
+  - Approvals still require portal login regardless of speaker recognition result
 
 ---
 
@@ -387,15 +443,20 @@ REQUESTED → NOTIFIED → APPROVED | DENIED
 
 | Table | Purpose |
 |---|---|
-| `users_admin` | Admin auth |
+| `parents` | Parent auth (email/password/MFA/passkey) |
+| `households` | Household grouping + settings |
+| `children` | Child profiles per household (display name, avatar, preferred_mode) |
+| `child_mode_stats` | Per-child mode preference counters |
 | `devices` | Child client devices |
-| `child_profile` | Single row Day 1 (with `child_id` PK for future multi-child) |
 | `policies` | Parent-set rules |
 | `curriculum_goals` | Parent-defined learning goals and priorities per child |
 | `skill_specs` | Skill definitions |
+| `worlds` | World/theme mapping to skill sets (see §9.3) |
+| `household_enabled_worlds` | Which worlds are enabled per household |
 | `content_objects` | Immutable content instances |
 | `content_embeddings` | pgvector embeddings (or vector column in content_objects) |
-| `sessions` | Session records (FK to `child_id`) |
+| `learning_bundles` | Triad session artifacts (Talk/Practice/Play per skill focus) |
+| `sessions` | Session records (FK to `child_id`, FK to `bundle_id`) |
 | `session_events` | Append-only telemetry |
 | `approvals` | Approval card records |
 | `stars_ledger` | Append-only Star transactions (earned/spent) |
@@ -416,6 +477,31 @@ Use embeddings to retrieve:
 2. Select top-k candidates
 3. Either reuse directly or pass into **bounded LLM job** to create a modified variant
 4. Store as new `content_id` + embedding
+
+### 9.3 Worlds Layer
+
+Worlds are a **mapping layer** that group skills into themed navigational contexts. Required in the data model from Day 1 even if the World-picker UI is deferred.
+
+**`worlds` table:**
+
+| Field | Description |
+|---|---|
+| `world_id` | UUID |
+| `name` | Display name (e.g., "Spelling Kingdom") |
+| `icon` | Asset reference |
+| `enabled` | Global enable flag |
+| `skill_ids[]` | Skills accessible within this world |
+| `scope_tags[]` | Policy scope tags associated with this world |
+
+**`household_enabled_worlds` table:**
+
+| Field | Description |
+|---|---|
+| `household_id` | FK to households |
+| `world_id` | FK to worlds |
+| `enabled` | Per-household override |
+
+**Usage:** The policy engine uses `household_enabled_worlds` to scope allowed skills + generate `safe_alternatives[]` for out-of-scope redirects. The Child UI can use worlds for navigation in a future release.
 
 ---
 
