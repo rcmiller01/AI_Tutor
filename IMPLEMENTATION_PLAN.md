@@ -229,9 +229,9 @@
 - ✅ Write `triad-bundle.golden.test.ts` — all 9 scenarios from GOLDENS_PLAN.md §2.2
 - ✅ All 9 scenarios pass
 
-### 2.5 Remaining Engine Implementations
-- ⬜ `MatchSortClassifyEngine` — same plugin interface; hint ladder applies
-- ⬜ `StoryMicroTasksEngine` — hint ladder applies to comprehension items; story pages themselves have no hints
+### 2.5 Remaining Engine Implementations ✅
+- ✅ `MatchSortClassifyEngine` — same plugin interface; hint ladder applies
+- ✅ `StoryMicroTasksEngine` — hint ladder applies to comprehension items; story pages themselves have no hints
 
 ---
 

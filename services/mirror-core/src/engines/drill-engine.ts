@@ -362,9 +362,10 @@ function buildHint(state: DrillState, _wrongChoiceId?: string, hintsRemaining?: 
     const style = styles[Math.min(state.hintsUsedForCurrentItem, styles.length - 1)];
 
     return {
+        rung_name: 'nudge', // Legacy/stub
         hint_text: matchedMisconception?.hint_text
             ?? 'Try sounding out each letter one at a time. What sound does each letter make?',
-        hint_style: style,
+        hint_style: style as any,
         hint_audio_key: matchedMisconception?.hint_audio_key,
         hints_remaining: hintsRemaining ?? 0,
     };
