@@ -15,8 +15,8 @@ pool.on('error', (err) => {
     console.error('Unexpected DB pool error:', err);
 });
 
-pool.on('connect', (client) => {
-    console.log(`[DB] Connected to database as ${client.user}`);
+pool.on('connect', () => {
+    console.log('[DB] Connected to database pool');
 });
 
 export { pool };

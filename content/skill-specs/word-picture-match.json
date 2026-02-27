@@ -83,6 +83,14 @@
         ],
         "hint_penalty": 0.5
     },
+    "near_transfer_pool": {
+        "strategy": "query",
+        "query": {
+            "skill_id": "word-picture-match",
+            "difficulty_level": null,
+            "exclude_current": true
+        }
+    },
     "scope_tags": [
         "reading",
         "vocabulary"

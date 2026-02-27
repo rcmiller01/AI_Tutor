@@ -1,0 +1,35 @@
+{
+    "_comment": "Golden content object — near-transfer CVC blending item. Different phonics family (-og vs -at). Used as the near-transfer follow-up after bottom-out on cvc-tap-001.",
+    "content_id": "cvc-tap-002",
+    "skill_id": "cvc-blending",
+    "engine_type": "MICRO_SKILL_DRILL",
+    "template_id": "tap_choice",
+    "version": 1,
+    "source": "CURATED",
+    "created_at": "2026-01-01T00:00:00Z",
+    "constraints_hash": "abc123",
+    "difficulty_level": 1,
+    "payload": {
+        "type": "tap_choice",
+        "prompt_text": "Which word does d-o-g spell?",
+        "prompt_audio_key": "audio/cvc/prompt-dog",
+        "choices": [
+            {
+                "choice_id": "A",
+                "label": "dog",
+                "audio_key": "audio/cvc/word-dog"
+            },
+            {
+                "choice_id": "B",
+                "label": "log",
+                "audio_key": "audio/cvc/word-log"
+            },
+            {
+                "choice_id": "C",
+                "label": "fog",
+                "audio_key": "audio/cvc/word-fog"
+            }
+        ],
+        "correct_choice_id": "A"
+    }
+}

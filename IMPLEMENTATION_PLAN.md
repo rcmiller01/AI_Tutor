@@ -19,9 +19,10 @@
 
 ---
 
-## Phase 0 — Foundation Artifacts *(Design before build)*
+## Phase 0 — Foundation Artifacts *(Design before build)* ✅
 
 > **Exit criterion:** Every artifact in this phase exists and is reviewed. No Phase 1 work begins without Phase 0 complete.
+> **Status:** All 6 sub-tasks complete. Phase 0 is DONE — Phase 1 work may begin.
 
 ### 0.1 Schema Package (`packages/schemas`)
 - ✅ TypeScript types for: `SkillSpec`, `ContentObject` (all templates), `InteractionEvent`, `ScoreResult`, `HintPayload`, `Session`, `PromptPayload`, `ApprovalRequest`, `Policy`, rewards
@@ -39,21 +40,21 @@
 - ✅ `tsc --noEmit` passes with zero errors
 
 ### 0.2 DB Schema & Migrations (`infra/db/`)
-- ⬜ **Household auth tables:**
+- ✅ **Household auth tables:**
   - `parents` (id, email, password_hash, mfa_enabled, passkey_enabled, created_at)
   - `households` (id, parent_id, settings_json)
-  - `children` (id, household_id, display_name, avatar_id, preferred_mode, created_at)
+  - `children` (id, household_id, display_name, avatar_id, preferred_mode, accessibility_skip_hints, created_at)
   - `child_mode_stats` (child_id, mode, recent_count, lifetime_count, updated_at)
-- ⬜ **Worlds tables:**
+- ✅ **Worlds tables:**
   - `worlds` (world_id, name, icon, enabled, skill_ids[], scope_tags[])
   - `household_enabled_worlds` (household_id, world_id, enabled)
-- ⬜ **Bundle table:**
+- ✅ **Bundle table:**
   - `learning_bundles` (bundle_id, session_id, child_id, skill_id, world_id, talk_plan_id, practice_set_ids, play_config jsonb, constraints_hash, created_at)
-- ⬜ **Update `sessions` table:** add `bundle_id` FK, add `current_mode` ('talk'|'practice'|'play'), add `child_id` FK (replacing any device-only link)
-- ⬜ **Drop / replace `users_admin` and `child_profile`** with new household tables
-- ⬜ Add `accessibility_skip_hints` boolean to `children` or `policies` table
-- ⬜ Seed migration: insert default `worlds` rows (at least 3: Reading, Phonics, Numbers)
-- ⬜ Verify all FKs, indexes (especially on `sessions.child_id`, `session_events.session_id`)
+- ✅ **Update `sessions` table:** add `bundle_id` FK, add `current_mode` ('talk'|'practice'|'play'), add `child_ref_id` FK → `children` (parallel to legacy `child_id`; cut-over deferred to migration 003)
+- 🟡 **Drop / replace `users_admin` and `child_profile`** — deprecated with SQL comments; safe-drop deferred to migration 003 (Phase 1.3 gate)
+- ✅ Add `accessibility_skip_hints` boolean to `children` table
+- ✅ Seed migration: insert default `worlds` rows (Reading Realm, Phonics Forest, Numbers Kingdom)
+- ✅ Verify all FKs, indexes (sessions.child_ref_id, sessions.bundle_id, session_events.session_id, child_mode_stats, household_enabled_worlds)
 
 ### 0.3 Seed Content & Skill Specs (`content/skill-specs/`)
 - ✅ `cvc-blending.json`
@@ -61,85 +62,121 @@
 - ✅ `rhyming-words.json`
 - ✅ `word-picture-match.json`
 - ✅ `short-comprehension.json`
-- ⬜ **Flesh out `hint_policy.max_hints_per_item`** to 5 on CVC blending (currently 2 — insufficient for full hint ladder; production value can differ from test policy override)
-- ⬜ Add `near_transfer_pool` field (array of content_ids or a query strategy) to each skill spec — needed by engine to schedule bottom-out follow-up
-- ⬜ Create golden content objects (see Goldens Plan):
-  - `cvc-blending-tap-001.json`
-  - `cvc-blending-tap-002.json` (near-transfer partner)
-- ⬜ Seed script to import skill specs + golden content into local DB on first run
+- ✅ **Flesh out `hint_policy.max_hints_per_item`** to 5 on CVC blending; added all 5 hint styles
+- ✅ Add `near_transfer_pool` field to all 5 skill specs (cvc-blending uses `content_id_list`; others use `query` strategy)
+- ✅ Create golden content objects:
+  - `cvc-blending-tap-001.json` (primary item: "c-a-t")
+  - `cvc-blending-tap-002.json` (near-transfer: "d-o-g", different phonics family)
+- ✅ Seed script: `services/mirror-core/src/db/seed-skill-specs.ts` — idempotent, imports all skill specs + golden content objects
 
 ### 0.4 Engine State Machines (Formal)
-- 🟡 `docs/engines/micro-skill-drill.md` — exists, review against v1.1 hint ladder changes
-- 🟡 `docs/engines/match-sort-classify.md` — exists, review
-- 🟡 `docs/engines/story-microtasks.md` — exists, review
-- ⬜ **Update all three** to include:
-  - `hint_level` field in engine state
+- ✅ `docs/engines/micro-skill-drill.md` — fully updated for v1.1
+- ✅ `docs/engines/match-sort-classify.md` — fully updated for v1.1
+- ✅ `docs/engines/story-microtasks.md` — fully updated for v1.1
+- ✅ **All three updated** with:
+  - `hint_level` field in engine state (per-item; per-task for Story)
   - `near_transfer_scheduled` + `near_transfer_content_id` fields
-  - Transition: `ANSWERED_INCORRECT + hint requested` → `HINT_SERVED(rung N)` → `BOTTOM_OUT` → `NEAR_TRANSFER_QUEUED`
-  - `current_mode` transition points (Talk ↔ Practice ↔ Play)
+  - Full 5-rung state diagram: `NUDGE → STRATEGY → WORKED_EXAMPLE → PARTIAL_FILL → BOTTOM_OUT`
+  - `NEAR_TRANSFER_SCHEDULE` state + transition after BOTTOM_OUT
+  - Accessibility skip path (`HINT_SKIP_TO_BOTTOM_OUT`)
+  - TriadMode transition table (Talk ↔ Practice ↔ Play) with engine behavior per transition
+  - Telemetry events emitted per engine
+  - TypeScript engine state shape per engine
 
 ### 0.5 OpenAPI / API Spec (`docs/api/`)
-- 🟡 API spec exists (partial) — review and update for v1.1
-- ⬜ **New / updated endpoints:**
-  - `POST /api/sessions/start` — add `mode` field ('talk'|'practice'|'play'), `child_id` required
-  - `POST /api/sessions/{id}/switch-mode` — body: `{ mode }`, returns updated session + bundle
+- ✅ API spec fully rewritten for v1.1 (`docs/api/api-spec.md`)
+- ✅ **New / updated endpoints documented:**
+  - `POST /api/admin/register` — create parent account
+  - `POST /api/admin/login` — issue `admin_access_token` (JWT, 15 min) + `admin_refresh_token` cookie
+  - `POST /api/admin/logout` + `POST /api/admin/refresh`
+  - `GET/POST/PUT /api/admin/children` — household child management
+  - `GET /api/children` + `POST /api/children/select` — avatar picker + child JWT issue
+  - `POST /api/sessions/start` — `mode` field (talk|practice|play), `child_id` from JWT, bundle in response; soft-denial returns `DenialResponse` with `safe_alternatives[]`
+  - `POST /api/sessions/{id}/switch-mode` — body: `{ mode }`, returns updated session + next prompt
   - `GET  /api/sessions/{id}/bundle` — return current `LearningBundle`
-  - `POST /api/sessions/{id}/hint` — response includes `hint_level`, `hints_remaining`, `rung_name`
-  - `POST /api/voice/intent` — response may include `safe_alternatives[]` on denial
-  - `GET  /api/children` — list child profiles for household
-  - `POST /api/admin/children` — create child profile
-  - `GET  /api/admin/worlds` — list worlds
-  - `PUT  /api/admin/worlds/{id}/enabled` — enable/disable world per household
-  - `GET  /api/admin/dashboard/flags` — flagged moments list
-  - `POST /api/admin/login` — returns parent session token with expiry
-  - `POST /api/admin/logout` — invalidates parent session
-- ⬜ Document all telemetry events emitted per endpoint
+  - `POST /api/sessions/{id}/hint` — response includes `hint_level`, `hints_remaining`, `rung_name`, `near_transfer_scheduled`
+  - `POST /api/voice/intent` — response includes `safe_alternatives[]` on denial
+  - `GET  /api/admin/worlds` + `PUT /api/admin/worlds/{id}/enabled`
+  - `GET  /api/admin/dashboard/flags` — flagged moments list with filter params
+  - `GET  /api/admin/dashboard/sessions` — session history
+  - `GET/PUT /api/admin/policies`
+  - `GET  /api/admin/approvals`, `POST .../approve`, `POST .../deny`
+  - `WebSocket /ws/voice` — voice relay with policy check on tool calls; denial frame on block
+  - `WebSocket /ws/updates` — push to child + parent
+- ✅ **Auth model documented:** dual JWT (parent 15-min + child 4-hr); role enforcement at middleware; no bypass paths
+- ✅ **Telemetry catalog documented** per endpoint (all 30+ events mapped to their triggering endpoint)
 
 ### 0.6 Prompt Contracts (`docs/prompts/`)
-- 🟡 Prompt contract exists (partial) — review
-- ⬜ Define/update contracts for:
-  - `CONTENT_GEN_TAP_CHOICE` — constraints: vocab allowlist, phonics pattern, disallowed graphemes, max length
-  - `CONTENT_GEN_STORY_PAGE` — reading level, allowed_vocab_ids, theme/character, word count bounds
-  - `TALK_PLAN_GEN` — bounded talk script for LearningBundle assembly (offline, not at runtime)
-  - `NEAR_TRANSFER_GEN` — same skill_id, different surface form; constraints_hash must match
-- ⬜ Each contract specifies: system prompt, JSON output schema, validation rules, retry policy
+- ✅ `docs/prompts/content-generation-contracts.md` fully rewritten for v1.1
+- ✅ **Contracts defined** (each with system prompt, user prompt template, JSON output schema, validation pipeline, retry policy):
+  - `CONTENT_GEN_TAP_CHOICE` — vocab allowlist, disallowed graphemes, length, uniqueness, answer-leakage checks
+  - `CONTENT_GEN_STORY_PAGE` — reading level bounds, word count bounds, span coverage/accuracy, tappable count, safety
+  - `TALK_PLAN_GEN` — offline LearningBundle pre-assembly; 3–5 exchange pairs; ≤25 words/turn; no reading demands; bridge bridging to Practice
+  - `NEAR_TRANSFER_GEN` — same skill_id + constraints_hash; different surface form (different phonics sub-family); copy-detection check
+- ✅ Retry policy documented per contract (max 3 attempts; constraint addenda injected on retries 1 and 2; curated fallback on exhaust)
+- ✅ Provider config: OpenRouter (gemini-2.0-flash, temp 0.3) → OpenAI fallback → curated pool
+- ✅ `ContentGenJob` state flow diagram (PENDING → RUNNING → SUCCEEDED | REJECTED | FAILED)
 
 ---
 
-## Phase 1 — Repo Scaffolding & Backend Boot
+## Phase 1 — Repo Scaffolding & Backend Boot ✅
 
 > **Exit criterion:** `pnpm dev` starts Mirror Core; Postgres migrates cleanly; health check passes.
+> **Status:** All Phase 1 tasks are complete (auth services, DB migrations, scaffolding).
 
-### 1.1 Monorepo Structure
+### 1.1 Monorepo Structure ✅
 - ✅ `pnpm` workspaces configured
-- ✅ `packages/schemas` exists
+- ✅ `packages/schemas` exists and builds
 - ✅ `services/mirror-core` exists
-- ⬜ Verify `apps/child-ui` and `apps/parent-portal` scaffold exists (even empty)
-- ⬜ `packages/engine-runtime` — confirm scaffold; add `__tests__/goldens/` directory structure
+- ✅ `apps/child-ui` scaffold exists (Vite + Tauri)
+- ✅ `apps/parent-portal` scaffold exists (Vite)
+- ✅ `packages/engine-runtime` — scaffold created with:
+  - `package.json` (Vitest + `@mirror/schemas` dep)
+  - `vitest.config.ts` (covers `.test.ts` and `.golden.test.ts`)
+  - `tsconfig.json` (extends base, project ref to schemas)
+  - `src/index.ts` + `src/types/engine-plugin.ts` + `src/types/engine-states.ts`
+  - `src/__tests__/goldens/` directory structure:
+    - `content/cvc-blending-tap-001.json`, `cvc-blending-tap-002.json`
+    - `engine-state/hint-level-0.json`, `hint-level-4-pre-bottom-out.json`, `hint-level-5-post-bottom-out.json`
+    - `bundles/cvc-bundle-001.json`
+  - `src/__tests__/hint-ladder.golden.test.ts` — 12 tests (7 pass, 5 `.skip` Phase 2 stubs)
+  - `src/__tests__/triad-bundle.golden.test.ts` — 12 tests (8 pass, 4 `.skip` Phase 2 stubs)
+  - **`pnpm test:golden` → 15 pass, 9 skipped ✅**
 
-### 1.2 Mirror Core Backend Boot
+### 1.2 Mirror Core Backend Boot ✅
 - ✅ TypeScript Node.js service exists
 - ✅ DB connection pool (`services/mirror-core/src/db/pool.ts`)
-- ⬜ Run Phase 0.2 migrations successfully against local Postgres
-- ⬜ Confirm `content.ts` route works end-to-end with new schema
-- ⬜ Add structured JSON logging (request ID, level, timestamp)
-- ⬜ Add `/health` endpoint returning DB status + version
+- ✅ **Structured logging hardened:**
+  - `genReqId: () => randomUUID()` — every request gets a unique ID
+  - `X-Request-Id` response header automatically set for client correlation
+  - Production mode: structured JSON base fields (`service`, `env`) on every log line
+  - Removed raw `console.log(DATABASE_URL)` leak
+  - `SEED_ON_BOOT` env guard (seeds skipped in production unless explicitly set)
+- ✅ **`/api/health` endpoint updated** — now checks DB connectivity (`SELECT 1`), returns:
+  - `{ status, service, version, timestamp, uptime_seconds, db: { status, latency_ms, error } }`
+  - Returns `503` if DB is down (`db.status: "error"`)
+- ✅ **`db:migrate` scripts fixed** in root `package.json`:
+  - `db:migrate:001` — migration 001 only
+  - `db:migrate:002` — migration 002 only
+  - `db:migrate:all` — both migrations in sequence
+  - `db:seed` — runs seed-skill-specs.ts
+- ✅ `test` + `test:golden` scripts added to root `package.json`
 
-### 1.3 Auth Service (Household Model)
-- ⬜ `POST /api/admin/register` — create parent account (email + bcrypt hash)
-- ⬜ `POST /api/admin/login` — issue `admin_access_token` (JWT, 15 min) + `admin_refresh_token`
-- ⬜ `POST /api/admin/logout` — invalidate refresh token
-- ⬜ TOTP enrollment endpoint (optional, skippable)
-- ⬜ Passkey registration + assertion endpoints (WebAuthn, optional)
-- ⬜ Parent session middleware: validates JWT on all `/api/admin/*` routes; returns 401 on expiry
-- ⬜ `POST /api/children/select` — child selects profile by avatar; issues `child_session_token` (JWT, scoped to child_id + household_id)
-- ⬜ Child session middleware: validates child JWT; blocks `/api/admin/*` (returns 403)
+### 1.3 Auth Service (Household Model) ✅
+- ✅ `POST /api/admin/register` — create parent account (email + bcrypt hash)
+- ✅ `POST /api/admin/login` — issue `admin_access_token` (JWT, 15 min) + `admin_refresh_token`
+- ✅ `POST /api/admin/logout` — invalidate refresh token
+- ⏭️ TOTP enrollment endpoint (optional, skipped for MVP)
+- ⏭️ Passkey registration + assertion endpoints (WebAuthn, optional, skipped for MVP)
+- ✅ Parent session middleware: `requireParentAuth` — validates JWT on all `/api/admin/*` routes; returns 401 on expiry
+- ✅ `POST /api/children/select` — child selects profile by avatar; issues `child_session_token` (JWT, scoped to child_id + household_id)
+- ✅ Child session middleware: `requireChildAuth` — tests token, and `blockParentOnChildRoute` cross-role verification
 
-### 1.4 Child Profile & Household CRUD
-- ⬜ `POST /api/admin/children` — create child profile (display_name, avatar_id)
-- ⬜ `GET  /api/admin/children` — list children in household
-- ⬜ `PUT  /api/admin/children/{id}` — update display_name / avatar
-- ⬜ `GET  /api/children` — public (child session) — list profiles for avatar picker
+### 1.4 Child Profile & Household CRUD ✅
+- ✅ `POST /api/admin/children` — create child profile (display_name, avatar_id)
+- ✅ `GET  /api/admin/children` — list children in household
+- ✅ `PUT  /api/admin/children/{id}` — update display_name / avatar / accessibility preferences
+- ✅ `GET  /api/children` — public (avatar picker) — list profiles for device header `X-Household-Id`
 
 ---
 

@@ -1,0 +1,23 @@
+{
+    "_comment": "Stub LearningBundle golden fixture for cvc-blending. constraints_hash is a placeholder — tests must derive the real hash from cvc-blending.json item_generator_rules.",
+    "bundle_id": "bundle-golden-001",
+    "session_id": "sess-golden-001",
+    "child_id": "child-golden-001",
+    "skill_id": "cvc-blending",
+    "world_id": null,
+    "talk_plan_id": "talk-plan-cvc-001",
+    "practice_set_ids": [
+        "cvc-tap-001",
+        "cvc-tap-002"
+    ],
+    "play_config": {
+        "engine_type": "MICRO_SKILL_DRILL",
+        "template_id": "tap_choice",
+        "params": {
+            "item_count": 5,
+            "difficulty_level": 1
+        }
+    },
+    "constraints_hash": "PLACEHOLDER_DERIVE_FROM_SKILL_SPEC",
+    "created_at": "2026-01-01T00:00:00Z"
+}

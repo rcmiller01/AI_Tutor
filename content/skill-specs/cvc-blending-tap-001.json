@@ -1,0 +1,35 @@
+{
+    "_comment": "Golden content object — primary CVC blending item. Used as anchor in hint-ladder golden tests.",
+    "content_id": "cvc-tap-001",
+    "skill_id": "cvc-blending",
+    "engine_type": "MICRO_SKILL_DRILL",
+    "template_id": "tap_choice",
+    "version": 1,
+    "source": "CURATED",
+    "created_at": "2026-01-01T00:00:00Z",
+    "constraints_hash": "abc123",
+    "difficulty_level": 1,
+    "payload": {
+        "type": "tap_choice",
+        "prompt_text": "Which word does c-a-t spell?",
+        "prompt_audio_key": "audio/cvc/prompt-cat",
+        "choices": [
+            {
+                "choice_id": "A",
+                "label": "cat",
+                "audio_key": "audio/cvc/word-cat"
+            },
+            {
+                "choice_id": "B",
+                "label": "bat",
+                "audio_key": "audio/cvc/word-bat"
+            },
+            {
+                "choice_id": "C",
+                "label": "hat",
+                "audio_key": "audio/cvc/word-hat"
+            }
+        ],
+        "correct_choice_id": "A"
+    }
+}

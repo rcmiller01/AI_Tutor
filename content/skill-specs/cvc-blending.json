@@ -123,13 +123,21 @@
         "min_items": 15
     },
     "hint_policy": {
-        "max_hints_per_item": 2,
+        "max_hints_per_item": 5,
         "allowed_hint_styles": [
             "text",
             "audio",
-            "eliminate_wrong"
+            "highlight",
+            "eliminate_wrong",
+            "show_example"
         ],
         "hint_penalty": 0.5
+    },
+    "near_transfer_pool": {
+        "strategy": "content_id_list",
+        "content_ids": [
+            "cvc-tap-002"
+        ]
     },
     "scope_tags": [
         "reading",

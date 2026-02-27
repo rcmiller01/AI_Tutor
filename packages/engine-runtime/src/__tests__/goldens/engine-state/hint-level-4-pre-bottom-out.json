@@ -1,0 +1,18 @@
+{
+    "_description": "Engine state after 4 hints served (rungs 1–4). Next hint call must trigger bottom-out (rung 5).",
+    "session_id": "sess-golden-001",
+    "skill_id": "cvc-blending",
+    "engine_type": "MICRO_SKILL_DRILL",
+    "current_content_id": "cvc-tap-001",
+    "hint_level": 4,
+    "items_attempted": 1,
+    "items_correct": 0,
+    "streak": 0,
+    "misconception_pattern": "skips_middle_vowel",
+    "near_transfer_scheduled": false,
+    "near_transfer_content_id": null,
+    "queue": [
+        "cvc-tap-001"
+    ],
+    "difficulty_level": 1
+}

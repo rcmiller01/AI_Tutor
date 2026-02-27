@@ -1,0 +1,19 @@
+{
+    "_description": "Engine state after bottom-out (rung 5) served. near_transfer_scheduled must be true and queue must contain cvc-tap-002 as immediate next item.",
+    "session_id": "sess-golden-001",
+    "skill_id": "cvc-blending",
+    "engine_type": "MICRO_SKILL_DRILL",
+    "current_content_id": "cvc-tap-001",
+    "hint_level": 5,
+    "items_attempted": 1,
+    "items_correct": 0,
+    "streak": 0,
+    "misconception_pattern": "skips_middle_vowel",
+    "near_transfer_scheduled": true,
+    "near_transfer_content_id": "cvc-tap-002",
+    "queue": [
+        "cvc-tap-001",
+        "cvc-tap-002"
+    ],
+    "difficulty_level": 1
+}
