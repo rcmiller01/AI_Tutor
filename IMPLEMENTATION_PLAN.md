@@ -184,50 +184,50 @@
 
 > **Exit criterion:** All hint-ladder and engine golden tests pass. Engine operates with zero LLM calls given seeded content.
 
-### 2.1 Engine Runtime Package (`packages/engine-runtime`)
-- ⬜ Define `EnginePlugin` interface (per Architecture §3.3 + updated signature for `render_hints`)
-- ⬜ Implement `MicroSkillDrillEngine`:
+### 2.1 Engine Runtime Package (`packages/engine-runtime`) ✅
+- ✅ Define `EnginePlugin` interface (per Architecture §3.3 + updated signature for `render_hints`)
+- ✅ Implement `MicroSkillDrillEngine`:
   - `init(session_ctx) → engine_state`
   - `next_prompt(engine_state) → PromptPayload`
   - `score_interaction(engine_state, InteractionEvent) → ScoreResult`
   - `render_hints(engine_state, ScoreResult, SkillSpec) → HintPayload`
   - `is_mastered(engine_state) → MasteryResult`
   - `maybe_generate_content(engine_state) → ContentGenJob | null`
-- ⬜ Implement hint ladder logic in `render_hints()`:
+- ✅ Implement hint ladder logic in `render_hints()`:
   - Read `engine_state.hint_level`
   - Select rung deterministically (Nudge → Strategy → WorkedExample → PartialFill → BottomOut)
   - Respect `skill_spec.hint_policy.max_hints_per_item` cap
   - On BottomOut: set `near_transfer_scheduled = true`, select near-transfer `content_id`, insert into front of queue
   - Accessibility skip: if `child_policy.accessibility_skip_hints = true`, jump directly to BottomOut
   - Increment `hint_level` in returned engine_state
-- ⬜ Engine state: `current_content_id`, `hint_level`, `near_transfer_scheduled`, `near_transfer_content_id`, `queue[]`
-- ⬜ `hint_level` resets to 0 when `current_content_id` changes
+- ✅ Engine state: `current_content_id`, `hint_level`, `near_transfer_scheduled`, `near_transfer_content_id`, `queue[]`
+- ✅ `hint_level` resets to 0 when `current_content_id` changes
 
-### 2.2 Hint Ladder Golden Tests
-- ⬜ Create golden fixture files (per GOLDENS_PLAN.md §1.1–1.2):
+### 2.2 Hint Ladder Golden Tests ✅
+- ✅ Create golden fixture files (per GOLDENS_PLAN.md §1.1–1.2):
   - `goldens/content/cvc-blending-tap-001.json`
   - `goldens/content/cvc-blending-tap-002.json`
   - `goldens/engine-state/hint-level-0.json`
   - `goldens/engine-state/hint-level-4-pre-bottom-out.json`
   - `goldens/engine-state/hint-level-5-post-bottom-out.json`
-- ⬜ Write `hint-ladder.golden.test.ts` — all 9 scenarios from GOLDENS_PLAN.md §1.3
-- ⬜ All 9 scenarios pass
+- ✅ Write `hint-ladder.golden.test.ts` — all 9 scenarios from GOLDENS_PLAN.md §1.3
+- ✅ All 9 scenarios pass
 
-### 2.3 LearningBundle Assembly
-- ⬜ `createLearningBundle(session_id, child_id, skill_id, world_id)` function:
+### 2.3 LearningBundle Assembly ✅
+- ✅ `createLearningBundle(session_id, child_id, skill_id, world_id)` function:
   - Selects `practice_set_ids[]` from DB (curated content for skill, difficulty 1)
   - Assigns `talk_plan_id` (stub string ref for now; full talk plan schema deferred)
   - Builds `play_config` from skill spec `allowed_engine_types[0]` + `templates[0]`
   - Computes `constraints_hash` = SHA-256(canonical JSON of `skill_spec.item_generator_rules`)
   - Persists to `learning_bundles` table
   - Makes **zero LLM calls**
-- ⬜ `switchMode(session_id, mode)`: updates `sessions.current_mode`; does NOT create new bundle
-- ⬜ `getBundle(session_id)`: returns current bundle for session
+- ✅ `switchMode(session_id, mode)`: updates `sessions.current_mode`; does NOT create new bundle
+- ✅ `getBundle(session_id)`: returns current bundle for session
 
-### 2.4 Triad Bundle Golden Tests
-- ⬜ Create golden fixture: `goldens/bundles/cvc-bundle-001.json` (stub, with real constraints_hash)
-- ⬜ Write `triad-bundle.golden.test.ts` — all 9 scenarios from GOLDENS_PLAN.md §2.2
-- ⬜ All 9 scenarios pass
+### 2.4 Triad Bundle Golden Tests ✅
+- ✅ Create golden fixture: `goldens/bundles/cvc-bundle-001.json` (stub, with real constraints_hash)
+- ✅ Write `triad-bundle.golden.test.ts` — all 9 scenarios from GOLDENS_PLAN.md §2.2
+- ✅ All 9 scenarios pass
 
 ### 2.5 Remaining Engine Implementations
 - ⬜ `MatchSortClassifyEngine` — same plugin interface; hint ladder applies

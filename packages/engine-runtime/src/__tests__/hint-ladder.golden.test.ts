@@ -17,6 +17,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { MicroSkillDrillState } from '../../types/engine-states.js';
+import { MicroSkillDrillEngine } from '../engines/micro-skill-drill.js';
 
 // Vitest runs from the package root. Goldens live at src/__tests__/goldens/.
 const GOLDENS_ROOT = resolve(process.cwd(), 'src/__tests__/goldens');
@@ -91,44 +92,49 @@ describe('Golden fixtures — shape validation', () => {
 // Phase 2: Remove the TODO and import engine. Tests become green.
 
 describe('Hint ladder — contract (Phase 2 target)', () => {
-    // TODO(Phase 2): import { MicroSkillDrillEngine } from '../../engines/micro-skill-drill.js'
-    // and replace the skip blocks below with real assertions.
+    const skillSpec = {
+        hint_policy: { max_hints_per_item: 5 },
+    } as unknown as any; // Cast for stubbing
 
-    it.skip('[Phase 2] rung 1 (nudge): hint_level increments to 1, returns rung_name = "nudge"', () => {
-        // const { state, hint } = MicroSkillDrillEngine.render_hints(stateHintLevel0, skillSpec, ctx, []);
-        // expect(state.hint_level).toBe(1);
-        // expect(hint?.rung_name).toBe('nudge');
-        // expect(hint?.hint_style).toBe('text');
+    const baseCtx = {
+        accessibility_skip_hints: false,
+        hint_max_override: undefined,
+    } as unknown as any;
+
+    it('[Phase 2] rung 1 (nudge): hint_level increments to 1, returns rung_name = "nudge"', () => {
+        const { state, hint } = MicroSkillDrillEngine.render_hints(stateHintLevel0, skillSpec, baseCtx, []);
+        expect(state.hint_level).toBe(1);
+        expect(hint?.rung_name).toBe('nudge');
+        expect(hint?.hint_style).toBe('text');
     });
 
-    it.skip('[Phase 2] rung 5 (bottom_out): hint_level === 5, near_transfer_scheduled === true, near_transfer_content_id set', () => {
-        // const { state, hint } = MicroSkillDrillEngine.render_hints(statePreBottomOut, skillSpec, ctx, [contentTap002]);
-        // expect(state.hint_level).toBe(5);
-        // expect(state.near_transfer_scheduled).toBe(true);
-        // expect(state.near_transfer_content_id).toBe('cvc-tap-002');
-        // expect(state.queue[1]).toBe('cvc-tap-002');
-        // expect(hint?.rung_name).toBe('bottom_out');
+    it('[Phase 2] rung 5 (bottom_out): hint_level === 5, near_transfer_scheduled === true, near_transfer_content_id set', () => {
+        const { state, hint } = MicroSkillDrillEngine.render_hints(statePreBottomOut, skillSpec, baseCtx, [contentTap002 as any]);
+        expect(state.hint_level).toBe(5);
+        expect(state.near_transfer_scheduled).toBe(true);
+        expect(state.near_transfer_content_id).toBe('cvc-tap-002');
+        expect(state.queue[1]).toBe('cvc-tap-002');
+        expect(hint?.rung_name).toBe('bottom_out');
     });
 
-    it.skip('[Phase 2] accessibility_skip_hints: jumps straight to bottom_out from hint_level 0', () => {
-        // const ctx = { accessibility_skip_hints: true, hint_max_override: undefined };
-        // const { state, hint } = MicroSkillDrillEngine.render_hints(stateHintLevel0, skillSpec, ctx, [contentTap002]);
-        // expect(state.hint_level).toBe(5);
-        // expect(hint?.rung_name).toBe('bottom_out');
+    it('[Phase 2] accessibility_skip_hints: jumps straight to bottom_out from hint_level 0', () => {
+        const ctx = { accessibility_skip_hints: true, hint_max_override: undefined } as unknown as any;
+        const { state, hint } = MicroSkillDrillEngine.render_hints(stateHintLevel0, skillSpec, ctx, [contentTap002 as any]);
+        expect(state.hint_level).toBe(5);
+        expect(hint?.rung_name).toBe('bottom_out');
     });
 
-    it.skip('[Phase 2] hints_exhausted: render_hints returns null after hint_level >= max_hints_per_item', () => {
-        // const exhaustedState = { ...statePostBottomOut };
-        // const { hint } = MicroSkillDrillEngine.render_hints(exhaustedState, skillSpec, ctx, []);
-        // expect(hint).toBeNull();
+    it('[Phase 2] hints_exhausted: render_hints returns null after hint_level >= max_hints_per_item', () => {
+        const exhaustedState = { ...statePostBottomOut };
+        const { hint } = MicroSkillDrillEngine.render_hints(exhaustedState, skillSpec, baseCtx, []);
+        expect(hint).toBeNull();
     });
 
-    it.skip('[Phase 2] hint_level resets to 0 on new content_id', () => {
-        // Simulate LOAD_ITEM with different content_id
-        // const { state } = MicroSkillDrillEngine.load_item(statePostBottomOut, 'cvc-tap-002');
-        // expect(state.hint_level).toBe(0);
-        // expect(state.near_transfer_scheduled).toBe(false);
-        // expect(state.near_transfer_content_id).toBeNull();
+    it('[Phase 2] hint_level resets to 0 on new content_id', () => {
+        const { state } = MicroSkillDrillEngine.load_item(statePostBottomOut, 'cvc-tap-002');
+        expect(state.hint_level).toBe(0);
+        expect(state.near_transfer_scheduled).toBe(false);
+        expect(state.near_transfer_content_id).toBeNull();
     });
 });
 

@@ -222,6 +222,7 @@ export interface MasteryStatus {
 }
 
 export interface HintPayload {
+    rung_name: HintRung;
     hint_text: string;
     hint_style: HintStyle;
     hint_audio_key?: string;
