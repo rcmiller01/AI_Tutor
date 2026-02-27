@@ -716,6 +716,59 @@ export interface EvtWorldsEnabledChanged extends TelemetryEventBase {
     payload: { household_id: string; world_id: string; enabled: boolean };
 }
 
+// --- Content Generation Events ---
+export interface EvtContentGenerationStarted extends TelemetryEventBase {
+    event_name: 'content.generation_started';
+    payload: {
+        job_id: string;
+        skill_id: string;
+        template_id: string;
+        difficulty_level: number;
+        retry_count: number;
+    };
+}
+export interface EvtContentGenerationCompleted extends TelemetryEventBase {
+    event_name: 'content.generation_completed';
+    payload: {
+        job_id: string;
+        skill_id: string;
+        content_count: number;
+        fallback_used: boolean;
+    };
+}
+export interface EvtContentValidationFailed extends TelemetryEventBase {
+    event_name: 'content.validation_failed';
+    payload: {
+        job_id: string;
+        skill_id: string;
+        error_count: number;
+        retry_count: number;
+    };
+}
+export interface EvtContentFallbackUsed extends TelemetryEventBase {
+    event_name: 'content.fallback_used';
+    payload: {
+        job_id: string;
+        skill_id: string;
+        curated_count: number;
+    };
+}
+export interface EvtContentEmbeddingGenerated extends TelemetryEventBase {
+    event_name: 'content.embedding_generated';
+    payload: {
+        content_id: string;
+        skill_id: string;
+        embedding_model: string;
+    };
+}
+export interface EvtHintNearTransferDelivered extends TelemetryEventBase {
+    event_name: 'hint.near_transfer_delivered';
+    payload: {
+        near_transfer_id: string;
+        session_id: string;
+    };
+}
+
 /**
  * Master discriminated union of every telemetry event.
  * Use event_name as the discriminant for exhaustive switch handling.
@@ -755,7 +808,13 @@ export type TelemetryEvent =
     | EvtFlagMisconceptionLoop
     | EvtFlagOutOfScope
     | EvtFlagSafetyEvent
-    | EvtWorldsEnabledChanged;
+    | EvtWorldsEnabledChanged
+    | EvtContentGenerationStarted
+    | EvtContentGenerationCompleted
+    | EvtContentValidationFailed
+    | EvtContentFallbackUsed
+    | EvtContentEmbeddingGenerated
+    | EvtHintNearTransferDelivered;
 
 /** Utility: extract the payload type for a given event name. */
 export type TelemetryPayload<T extends TelemetryEvent['event_name']> =

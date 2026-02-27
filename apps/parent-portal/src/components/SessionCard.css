@@ -1,0 +1,71 @@
+.session-card {
+    padding: var(--space-md);
+}
+
+.session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-md);
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.session-child {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.session-date {
+    font-size: 0.875rem;
+}
+
+.session-duration {
+    background: var(--color-secondary);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.session-stats {
+    display: flex;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-md);
+}
+
+.session-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.session-stat .stat-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.session-stat .stat-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.session-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.skill-tag {
+    background: var(--color-surface-elevated);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}

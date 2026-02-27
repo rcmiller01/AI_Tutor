@@ -127,8 +127,12 @@ export async function getNextItem(sessionId: string): Promise<PromptPayload> {
 
     // Trigger background generation if pool is running low (< 8 items)
     if (state.contentPool.length < 8) {
-        generateContentBatch(state.skillSpec.skill_id, 'tap_choice', state.difficulty, 10)
-            .catch(err => console.error('Background content gen failed:', err));
+        generateContentBatch({
+            skill_id: state.skillSpec.skill_id,
+            template_id: 'tap_choice',
+            difficulty_level: state.difficulty,
+            batch_size: 10,
+        }).catch(err => console.error('Background content gen failed:', err));
     }
 
     const content = state.contentPool[state.currentItemIndex];
@@ -233,7 +237,12 @@ export async function submitInteraction(
 
                 // If we don't have enough, trigger generation for the NEW level right away
                 if (newContent.length < 10) {
-                    generateContentBatch(state.skillSpec.skill_id, 'tap_choice', state.difficulty, 10).catch(() => { });
+                    generateContentBatch({
+                        skill_id: state.skillSpec.skill_id,
+                        template_id: 'tap_choice',
+                        difficulty_level: state.difficulty,
+                        batch_size: 10,
+                    }).catch(() => { });
                 }
 
                 if (newContent.length > 0) {

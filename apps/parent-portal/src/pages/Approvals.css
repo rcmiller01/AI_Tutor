@@ -1,0 +1,60 @@
+.approvals-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: var(--space-lg);
+}
+
+.page-header h1 {
+    margin-bottom: var(--space-xs);
+}
+
+.filter-bar {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.filter-btn:hover {
+    color: var(--color-text);
+    background: var(--color-surface-elevated);
+}
+
+.filter-btn.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+.approvals-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+}
+
+.empty-state p {
+    color: var(--color-text-muted);
+}
+
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}

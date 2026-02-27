@@ -9,7 +9,12 @@ import { skillRoutes } from './routes/skills.js';
 import { contentRoutes } from './routes/content.js';
 import { adminAuthRoutes } from './routes/admin-auth.js';
 import { childAuthRoutes } from './routes/child-auth.js';
+import { approvalRoutes } from './routes/approvals.js';
+import { worldsRoutes } from './routes/worlds.js';
+import { parentDashboardRoutes } from './routes/parent-dashboard.js';
 import { runAllSeeds } from './db/seed.js';
+import { setupAutoTimeout } from './jobs/session-timeout.js';
+import { contentGenWorker } from './services/content-gen-worker.js';
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
 const HOST = process.env.HOST ?? '0.0.0.0';
@@ -53,6 +58,11 @@ async function main() {
     await app.register(skillRoutes, { prefix: '/api' });
     await app.register(sessionRoutes, { prefix: '/api' });
     await app.register(contentRoutes, { prefix: '/api' });
+    // Phase 3: Approval workflow and Worlds API
+    await app.register(approvalRoutes, { prefix: '/api' });
+    await app.register(worldsRoutes, { prefix: '/api' });
+    // Phase 5: Parent dashboard
+    await app.register(parentDashboardRoutes, { prefix: '/api' });
 
     // ── Start ─────────────────────────────────────────────────────────────────
     try {
@@ -68,6 +78,24 @@ async function main() {
                 app.log.warn(
                     { err: seedErr instanceof Error ? seedErr.message : seedErr },
                     'Seed failed (DB may not be running)',
+                );
+            }
+        }
+
+        // Phase 3: Start session auto-timeout job
+        if (!IS_PROD || process.env.ENABLE_CRON === 'true') {
+            setupAutoTimeout(app);
+        }
+
+        // Phase 4: Start content generation worker
+        if (!IS_PROD || process.env.ENABLE_CONTENT_GEN === 'true') {
+            try {
+                await contentGenWorker.start();
+                app.log.info('Content generation worker started');
+            } catch (workerErr) {
+                app.log.warn(
+                    { err: workerErr instanceof Error ? workerErr.message : workerErr },
+                    'Content gen worker failed to start',
                 );
             }
         }

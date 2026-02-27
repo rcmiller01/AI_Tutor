@@ -18,7 +18,9 @@
         "db:down": "docker compose -f infra/docker-compose.yml down",
         "db:migrate:001": "docker compose -f infra/docker-compose.yml exec postgres psql -U mirror -d mirror_tutor -f /docker-entrypoint-initdb.d/001_initial_schema.sql",
         "db:migrate:002": "docker compose -f infra/docker-compose.yml exec postgres psql -U mirror -d mirror_tutor -f /docker-entrypoint-initdb.d/002_v1_1_household_schema.sql",
-        "db:migrate:all": "pnpm db:migrate:001 && pnpm db:migrate:002",
+        "db:migrate:003": "docker compose -f infra/docker-compose.yml exec postgres psql -U mirror -d mirror_tutor -f /docker-entrypoint-initdb.d/003_telemetry_events.sql",
+        "db:migrate:004": "docker compose -f infra/docker-compose.yml exec postgres psql -U mirror -d mirror_tutor -f /docker-entrypoint-initdb.d/004_content_embeddings.sql",
+        "db:migrate:all": "pnpm db:migrate:001 && pnpm db:migrate:002 && pnpm db:migrate:003 && pnpm db:migrate:004",
         "db:seed": "pnpm --filter mirror-core tsx src/db/seed-skill-specs.ts"
     },
     "engines": {
