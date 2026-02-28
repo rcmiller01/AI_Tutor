@@ -334,7 +334,7 @@ function rowToSessionV11(r: SessionV11Row): SessionV11 {
 
 /**
  * Create a v1.1 session with bundle_id and current_mode.
- * Uses child_ref_id (new v1.1 FK) instead of legacy child_id.
+ * Sets both child_id (legacy FK to child_profile) and child_ref_id (new FK to children).
  */
 export async function insertSessionV11(session: {
     child_id: string;
@@ -342,7 +342,7 @@ export async function insertSessionV11(session: {
     engine_type: string;
     current_mode: TriadMode;
     difficulty_level: number;
-    bundle_id: string;
+    bundle_id: string | null;
 }): Promise<SessionV11> {
     const id = randomUUID();
     const defaultStats: SessionStats = {
@@ -355,8 +355,8 @@ export async function insertSessionV11(session: {
         mastery_achieved: false,
     };
     const row = await getOne<SessionV11Row>(
-        `INSERT INTO sessions (session_id, child_ref_id, skill_id, engine_type, mode, current_mode, difficulty_level, bundle_id, stats, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'active')
+        `INSERT INTO sessions (session_id, child_id, child_ref_id, skill_id, engine_type, mode, current_mode, difficulty_level, bundle_id, stats, status)
+         VALUES ($1, $2, $2, $3, $4, $5, $6, $7, $8, $9, 'active')
          RETURNING *`,
         [
             id,

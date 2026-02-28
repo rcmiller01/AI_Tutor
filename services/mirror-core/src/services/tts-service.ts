@@ -7,9 +7,20 @@
 
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy-initialize OpenAI client to allow server startup without API key
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+    if (!openaiClient) {
+        if (!process.env.OPENAI_API_KEY) {
+            throw new Error('OPENAI_API_KEY environment variable is required for TTS');
+        }
+        openaiClient = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+    }
+    return openaiClient;
+}
 
 export type TTSVoice = 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
 export type TTSModel = 'tts-1' | 'tts-1-hd';
@@ -34,7 +45,7 @@ export async function generateSpeech(
         speed = 0.9, // Slightly slower for children
     } = options;
 
-    const response = await openai.audio.speech.create({
+    const response = await getOpenAIClient().audio.speech.create({
         model,
         voice,
         input: text,
@@ -66,7 +77,7 @@ export async function generateSpeechStream(
         speed = 0.9,
     } = options;
 
-    const response = await openai.audio.speech.create({
+    const response = await getOpenAIClient().audio.speech.create({
         model,
         voice,
         input: text,

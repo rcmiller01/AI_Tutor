@@ -218,7 +218,10 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
 
     const disconnect = useCallback(() => {
         if (wsRef.current) {
-            wsRef.current.send(JSON.stringify({ type: 'voice.disconnect' }));
+            // Only send disconnect message if WebSocket is fully open
+            if (wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({ type: 'voice.disconnect' }));
+            }
             wsRef.current.close();
             wsRef.current = null;
         }

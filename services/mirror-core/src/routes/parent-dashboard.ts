@@ -57,8 +57,9 @@ export async function parentDashboardRoutes(app: FastifyInstance) {
                 // Get pending approvals count
                 const approvalCount = await getOne<{ count: string }>(
                     `SELECT COUNT(*)::text as count
-                     FROM approval_requests
-                     WHERE household_id = $1 AND status = 'pending'`,
+                     FROM approvals a
+                     JOIN children c ON a.child_id = c.child_id
+                     WHERE c.household_id = $1 AND a.status = 'requested'`,
                     [household_id]
                 );
 
@@ -204,8 +205,9 @@ export async function parentDashboardRoutes(app: FastifyInstance) {
             try {
                 const result = await getOne<{ count: string }>(
                     `SELECT COUNT(*)::text as count
-                     FROM approval_requests
-                     WHERE household_id = $1 AND status = 'pending'`,
+                     FROM approvals a
+                     JOIN children c ON a.child_id = c.child_id
+                     WHERE c.household_id = $1 AND a.status = 'requested'`,
                     [household_id]
                 );
 

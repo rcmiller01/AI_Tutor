@@ -52,6 +52,7 @@ async function main() {
             'http://localhost:5173', // child-ui dev
             'http://localhost:5174', // parent-portal dev
         ],
+        credentials: true, // Allow cookies for auth
     });
     // Phase 7: WebSocket support for voice relay
     await app.register(websocket, {
@@ -74,6 +75,11 @@ async function main() {
     await app.register(voiceRelayRoutes, { prefix: '/api' });
     await app.register(ttsRoutes, { prefix: '/api' });
 
+    // Phase 3: Setup session auto-timeout job (must be before listen)
+    if (!IS_PROD || process.env.ENABLE_CRON === 'true') {
+        setupAutoTimeout(app);
+    }
+
     // ── Start ─────────────────────────────────────────────────────────────────
     try {
         await app.listen({ port: PORT, host: HOST });
@@ -90,11 +96,6 @@ async function main() {
                     'Seed failed (DB may not be running)',
                 );
             }
-        }
-
-        // Phase 3: Start session auto-timeout job
-        if (!IS_PROD || process.env.ENABLE_CRON === 'true') {
-            setupAutoTimeout(app);
         }
 
         // Phase 4: Start content generation worker

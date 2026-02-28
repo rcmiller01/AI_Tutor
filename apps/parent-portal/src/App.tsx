@@ -8,6 +8,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Approvals } from './pages/Approvals';
 import { ChildProfile } from './pages/ChildProfile';
 import { Worlds } from './pages/Worlds';
+import { AddChild } from './pages/AddChild';
 
 function App() {
     const { isAuthenticated, isLoading } = useAuth();
@@ -49,6 +50,7 @@ function App() {
                 }
             >
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/children/new" element={<AddChild />} />
                 <Route path="/children/:childId" element={<ChildProfile />} />
                 <Route path="/approvals" element={<Approvals />} />
                 <Route path="/worlds" element={<Worlds />} />

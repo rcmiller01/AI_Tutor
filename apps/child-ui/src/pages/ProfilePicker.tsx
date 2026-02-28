@@ -11,7 +11,8 @@ import { useChildAuth, type ChildProfile } from '../contexts/ChildAuthContext';
 import './ProfilePicker.css';
 
 // Default household ID for MVP (device-provisioned in production)
-const DEFAULT_HOUSEHOLD_ID = 'household-001';
+// For local dev, this should match your parent account's household
+const DEFAULT_HOUSEHOLD_ID = import.meta.env.VITE_HOUSEHOLD_ID || '2d85efda-f39f-4eec-8987-b9fd5b8d233f';
 
 // Avatar color palette
 const AVATAR_COLORS = [

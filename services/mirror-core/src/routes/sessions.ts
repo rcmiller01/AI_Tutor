@@ -120,11 +120,19 @@ export async function sessionRoutes(app: FastifyInstance) {
                 const templateId = skillSpec.templates[0] ?? 'tap_choice';
                 const contentPool = await getContentBySkillAndDifficulty(skill_id, templateId, 1, 10);
 
-                // 6. Assemble learning bundle (deterministic, NO LLM)
-                // We need to create a temporary session_id first
-                const tempSessionId = crypto.randomUUID();
+                // 6. Create session first (needed for FK constraint on learning_bundles)
+                const session = await insertSessionV11({
+                    child_id: childId,
+                    skill_id,
+                    engine_type: engineType,
+                    current_mode: mode,
+                    difficulty_level: 1,
+                    bundle_id: null, // Will be updated after bundle creation
+                });
+
+                // 7. Assemble learning bundle (deterministic, NO LLM)
                 const bundlePayload = assembleLearningBundle({
-                    session_id: tempSessionId,
+                    session_id: session.session_id,
                     child_id: childId,
                     skill_spec: skillSpec,
                     world_id: resolvedWorldId,
@@ -132,9 +140,9 @@ export async function sessionRoutes(app: FastifyInstance) {
                     difficulty_level: 1,
                 });
 
-                // 7. Persist bundle to DB
+                // 8. Persist bundle to DB
                 const bundle = await insertLearningBundle({
-                    session_id: tempSessionId,
+                    session_id: session.session_id,
                     child_id: childId,
                     skill_id,
                     world_id: resolvedWorldId ?? null,
@@ -142,16 +150,6 @@ export async function sessionRoutes(app: FastifyInstance) {
                     practice_set_ids: bundlePayload.practice_set_ids,
                     play_config: bundlePayload.play_config as PlayConfig,
                     constraints_hash: bundlePayload.constraints_hash,
-                });
-
-                // 8. Create session with bundle_id
-                const session = await insertSessionV11({
-                    child_id: childId,
-                    skill_id,
-                    engine_type: engineType,
-                    current_mode: mode,
-                    difficulty_level: 1,
-                    bundle_id: bundle.bundle_id,
                 });
 
                 // 9. Emit telemetry events
@@ -176,14 +174,46 @@ export async function sessionRoutes(app: FastifyInstance) {
                     is_initial_selection: true,
                 }, telemetryCtx);
 
-                // 10. Return success response
+                // 10. Build first prompt from content pool
+                // Helper to strip answer keys from content before sending to client
+                const stripAnswers = (payload: Record<string, unknown>) => {
+                    const { correct_choice_id, correct_answer, correct_bin_map, ...safePayload } = payload as Record<string, unknown>;
+                    return safePayload;
+                };
+
+                let firstPrompt = null;
+                if (contentPool.length > 0) {
+                    const firstContent = contentPool[0];
+                    firstPrompt = {
+                        prompt_id: crypto.randomUUID(),
+                        session_id: session.session_id,
+                        content_id: firstContent.content_id,
+                        template_id: firstContent.template_id,
+                        widget_type: firstContent.template_id,
+                        content: stripAnswers(firstContent.payload as Record<string, unknown>),
+                        allowed_interactions: skillSpec.allowed_interactions,
+                        instruction_text: skillSpec.objective,
+                        skill_id,
+                        progress: {
+                            current_item: 1,
+                            total_items: contentPool.length,
+                            current_difficulty: 1,
+                            stars_session_total: 0,
+                            streak_current: 0,
+                        },
+                    };
+                }
+
+                // 11. Return success response
                 reply.code(201).send({
                     session_id: session.session_id,
-                    bundle_id: bundle.bundle_id,
-                    current_mode: mode,
                     skill_id,
+                    status: 'active',
+                    current_bundle: bundle,
+                    prompt: firstPrompt,
+                    current_mode: mode,
                     world_id: resolvedWorldId ?? null,
-                    bundle,
+                    bundle_id: bundle.bundle_id,
                     triad_offer_text: `Want to talk, practice, or play ${skillSpec.objective}?`,
                 });
             } catch (err) {
